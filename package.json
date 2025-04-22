@@ -1,0 +1,12 @@
+{
+	"dependencies": {
+		"@thehadron/lepton": "^0.0.1",
+		"@thehadron/quark": "^1.0.1",
+		"bcryptjs": "^3.0.2",
+		"jsonwebtoken": "^9.0.2",
+		"mysql2": "^3.14.0"
+	},
+	"devDependencies": {
+		"@types/node": "^22.14.1"
+	}
+}
