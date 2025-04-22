@@ -6,9 +6,31 @@ export const loginSchema = lepton.object({
     turnstileToken: lepton.string()
 });
 
-export const signUpSchema = loginSchema.extend({
+export const signUpSchema = lepton.object({
     username: lepton.string(),
-    repassword: lepton.string()
+    email: lepton.string(),
+    password: lepton.string(),
+    repassword: lepton.string(),
+    turnstileToken: lepton.string()
+});
+
+export const recoveryPasswordSchema = lepton.object({
+    email: lepton.string(),
+    turnstileToken: lepton.string()
+})
+
+export const recoveryUpdateSchema = lepton.object({
+    password: lepton.string(),
+    repassword: lepton.string(),
+    url: lepton.string(),
+    turnstileToken: lepton.string()
+})
+
+export const SecretPayloadSchema = lepton.object({
+    email: lepton.string(),
+    token: lepton.string(),
+    expires_at: lepton.bigint(),
+    create_at: lepton.bigint()
 });
 
 export const PublisherSchema = lepton.object({
@@ -16,12 +38,13 @@ export const PublisherSchema = lepton.object({
     username: lepton.string(),
     email: lepton.string(),
     verification: lepton.string().optional(),
-})
+});
 
 export const PostSchema = lepton.object({
     id: lepton.bigint(),
     title: lepton.string(),
     description: lepton.string(),
+    upvote: lepton.uint32(),
     tags: lepton.array(lepton.string()),
     url: lepton.string(),
     publisher: PublisherSchema
@@ -35,7 +58,11 @@ export const UserSchema = PublisherSchema.extend({
     following_publishers: lepton.array(PublisherSchema),
 });
 
-export const AuthUserSchema = PublisherSchema.omit(["verification"]).extend({password: lepton.string()});
+export const AuthUserSchema = PublisherSchema.omit(["verification"]).extend({
+    password: lepton.string()
+});
+
+export type SecretPayload = lepton.infer<typeof SecretPayloadSchema>
 
 export type AuthUser = lepton.infer<typeof AuthUserSchema>
 

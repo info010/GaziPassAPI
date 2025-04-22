@@ -1,10 +1,21 @@
-import { comparePassword } from "@/utils/bcrypt";
+import { comparePassword, signJwt } from "@/utils/crypt";
 import { findUserByEmail } from "@/utils/authService"
-import { signJwt } from "@/utils/jwt";
 import { loginSchema } from "@/utils/schemaManager";
 
 export async function POST(req: Request) {
-  const { email, password } = loginSchema.parse(await req.json());
+  const { email, password, turnstileToken} = loginSchema.parse(await req.json());
+
+  const turnstileRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      secret: process.env.TURNSTILE_SECRET_KEY,
+      response: turnstileToken,
+    }),
+  });
+
+  const result = await turnstileRes.json();
+  if (!result.success) return Response.json({ error: "Turnstile failed" }, { status: 400 });
 
   const user = await findUserByEmail(email)
   if (!user || !(await comparePassword(password, user.password))) {
