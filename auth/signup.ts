@@ -1,18 +1,11 @@
-import { hashPassword } from "@/utils/crypt";
+import { hashPassword, turnstileVertify } from "@/utils/crypt";
 import { createAuthUser, findAuthUserByEmail} from "@/services/authService"
 import { signUpSchema } from "@/utils/schemaManager";
 
 export async function POST(req: Request) {
   const { username, email, password, repassword, turnstileToken } = signUpSchema.parse(await req.json());
 
-  const turnstileRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      secret: process.env.TURNSTILE_SECRET_KEY,
-      response: turnstileToken,
-    }),
-  });
+  const turnstileRes = await turnstileVertify(turnstileToken);
 
   const result = await turnstileRes.json();
   if (!result.success) return Response.json({ error: "User is not exists!"}, { status: 400 });
