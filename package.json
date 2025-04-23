@@ -5,6 +5,7 @@
   "main": "server/server.ts",
   "scripts": {
     "build": "tsc",
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register server/server.ts",
     "test": "jest --config jest.config.ts --detectOpenHandles --coverage --maxWorkers=1"
   },
   "keywords": [],
