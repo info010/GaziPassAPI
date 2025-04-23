@@ -1,5 +1,5 @@
 import { comparePassword, signJwt } from "@/utils/crypt";
-import { findUserByEmail } from "@/utils/authService"
+import { findAuthUserByEmail } from "@/services/authService"
 import { loginSchema } from "@/utils/schemaManager";
 
 export async function POST(req: Request) {
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   const result = await turnstileRes.json();
   if (!result.success) return Response.json({ error: "Turnstile failed" }, { status: 400 });
 
-  const user = await findUserByEmail(email)
+  const user = await findAuthUserByEmail(email)
   if (!user || !(await comparePassword(password, user.password))) {
     return Response.json({ error: "Invalid credentials" }, { status: 401 });
   }

@@ -26,6 +26,13 @@ export const recoveryUpdateSchema = lepton.object({
     turnstileToken: lepton.string()
 })
 
+export const AuthUserSchema = lepton.object({
+    id: lepton.bigint(),
+    username: lepton.string(),
+    email: lepton.string(),
+    password: lepton.string()
+});
+
 export const SecretPayloadSchema = lepton.object({
     email: lepton.string(),
     token: lepton.string(),
@@ -33,10 +40,7 @@ export const SecretPayloadSchema = lepton.object({
     create_at: lepton.bigint()
 });
 
-export const PublisherSchema = lepton.object({
-    id: lepton.bigint(),
-    username: lepton.string(),
-    email: lepton.string(),
+export const PublisherSchema = AuthUserSchema.omit(["password"]).extend({
     verification: lepton.string().optional(),
 });
 
@@ -56,10 +60,6 @@ export const UserSchema = PublisherSchema.extend({
     favorites: lepton.array(PostSchema),
     following_tags: lepton.array(lepton.string()),
     following_publishers: lepton.array(PublisherSchema),
-});
-
-export const AuthUserSchema = PublisherSchema.omit(["verification"]).extend({
-    password: lepton.string()
 });
 
 export type SecretPayload = lepton.infer<typeof SecretPayloadSchema>

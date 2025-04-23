@@ -1,4 +1,4 @@
-import * as mysql from 'mysql2/promise';
+import * as mysql from "mysql2/promise";
 
 export const db = mysql.createPool({
   host: process.env.DB_HOST,
@@ -11,7 +11,7 @@ export const db = mysql.createPool({
 });
 
 const secretPayloadTable = `
-CREATE IF EXISTS TABLE secret_payload (
+CREATE IF EXISTS TABLE secret_payloads (
   email VARCHAR(255) UNIQUE,
   token VARCHAR(255),
   expire_at BIGINT,
@@ -20,7 +20,7 @@ CREATE IF EXISTS TABLE secret_payload (
 `;
 
 const publisherTable = `
-CREATE IF EXISTS TABLE publisher (
+CREATE IF EXISTS TABLE publishers (
   id BIGINT PRIMARY KEY,
   username VARCHAR(255),
   email VARCHAR(255) UNIQUE,
@@ -29,14 +29,14 @@ CREATE IF EXISTS TABLE publisher (
 `;
 
 const postTable = `
-CREATE IF EXISTS TABLE post (
+CREATE IF EXISTS TABLE posts (
   id BIGINT PRIMARY KEY,
   title VARCHAR(255),
   description VARCHAR(255),
-  upvote INT UNSIGNED,
+  upvote INT UNSIGNED DEFAULT 0,
   url VARCHAR(255),
   publisher_id BIGINT,
-  FOREIGN KEY (publisher_id) REFERENCES publisher(id)
+  FOREIGN KEY (publisher_id) REFERENCES publishers(id)
 );
 `;
 
@@ -44,12 +44,12 @@ const postTagsTable = `
 CREATE IF EXISTS TABLE post_tags (
   post_id BIGINT,
   tag VARCHAR(255),
-  FOREIGN KEY (post_id) REFERENCES post(id)
+  FOREIGN KEY (post_id) REFERENCES posts(id)
 );
 `;
 
 const userTable = `
-CREATE IF EXISTS TABLE user (
+CREATE IF EXISTS TABLE users (
   id BIGINT PRIMARY KEY,
   username VARCHAR(255),
   email VARCHAR(255) UNIQUE,
@@ -62,8 +62,8 @@ const userPostsTable = `
 CREATE IF EXISTS TABLE user_posts (
   user_id BIGINT,
   post_id BIGINT,
-  FOREIGN KEY (user_id) REFERENCES user(id),
-  FOREIGN KEY (post_id) REFERENCES post(id)
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (post_id) REFERENCES posts(id)
 );
 `;
 
@@ -71,17 +71,16 @@ const userFollowingTagsTable = `
 CREATE IF EXISTS TABLE user_following_tags (
   user_id BIGINT,
   tag VARCHAR(255),
-  FOREIGN KEY (user_id) REFERENCES user(id)
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 `;
-
 
 const userFavoritesTable = `
 CREATE IF EXISTS TABLE user_favorites (
   user_id BIGINT,
   post_id BIGINT,
-  FOREIGN KEY (user_id) REFERENCES user(id),
-  FOREIGN KEY (post_id) REFERENCES post(id)
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (post_id) REFERENCES posts(id)
 );
 `;
 
@@ -89,13 +88,13 @@ const userFollowingPublishersTable = `
 CREATE IF EXISTS TABLE user_following_publishers (
   user_id BIGINT,
   publisher_id BIGINT,
-  FOREIGN KEY (user_id) REFERENCES user(id),
-  FOREIGN KEY (publisher_id) REFERENCES publisher(id)
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (publisher_id) REFERENCES publishers(id)
 );
 `;
 
 const authUserTable = `
-CREATE IF EXISTS TABLE auth_user (
+CREATE IF EXISTS TABLE auth_users (
   id BIGINT PRIMARY KEY,
   username VARCHAR(255),
   email VARCHAR(255) UNIQUE,
@@ -113,9 +112,9 @@ const tables = [
   userFavoritesTable,
   userFollowingTagsTable,
   userFollowingPublishersTable,
-  authUserTable
+  authUserTable,
 ];
 
-tables.forEach(element => {
+tables.forEach((element) => {
   db.execute(element);
 });

@@ -1,5 +1,5 @@
 import { hashPassword } from "@/utils/crypt";
-import { createUser, findUserByEmail} from "@/utils/authService"
+import { createAuthUser, findAuthUserByEmail} from "@/services/authService"
 import { signUpSchema } from "@/utils/schemaManager";
 
 export async function POST(req: Request) {
@@ -19,12 +19,12 @@ export async function POST(req: Request) {
 
   if (password !== repassword) return Response.json({ error: "Password's is not equal!"}, { status: 400 });
 
-  const exsistUser = await findUserByEmail(email);
+  const exsistUser = await findAuthUserByEmail(email);
   if (exsistUser) return Response.json({ error: "Email is used"}, { status: 400});
 
   const hashedPassword = await hashPassword(password);
 
-  await createUser(username, email, hashedPassword);
+  await createAuthUser(username, email, hashedPassword);
 
   return Response.json({ success: true });
 }

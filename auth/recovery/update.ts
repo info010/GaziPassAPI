@@ -1,5 +1,5 @@
 import { AuthUser, recoveryUpdateSchema } from "@/utils/schemaManager";
-import { findUserById, updateUser, verifyRecovery } from "@/utils/authService";
+import { findAuthUserById, updateAuthUser, updatePassoword, verifyRecovery } from "@/services/authService";
 import { hashPassword } from "@/utils/crypt";
 
 export async function POST(req: Request) {
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     const user_id = BigInt(parsedUrl.searchParams.get("user_id"));
     const secret = parsedUrl.searchParams.get("secret");
 
-    const user = await findUserById(user_id) as AuthUser;
+    const user = await findAuthUserById(user_id) as AuthUser;
     if (!user) return Response.json({ error: "User is not exists!"}, { status: 400 });
 
     const isValid = await verifyRecovery( user.email, secret);    
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
     const hashedPassword = await hashPassword(password);
 
-    await updateUser( user.id, user.email, hashedPassword);
+    await updatePassoword( user.id, hashedPassword);
 
     return Response.json({ success: true });
 }
