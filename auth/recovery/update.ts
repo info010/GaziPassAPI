@@ -1,5 +1,5 @@
 import { AuthUser, recoveryUpdateSchema } from "@/utils/schemaManager";
-import { findAuthUserById, updateAuthUser, updatePassoword, verifyRecovery } from "@/services/authService";
+import { findAuthUserById, updatePassoword, verifyRecovery } from "@/services/authService";
 import { hashPassword, turnstileVertify } from "@/utils/crypt";
 
 export async function POST(req: Request) {
@@ -13,8 +13,13 @@ export async function POST(req: Request) {
     if (password !== repassword) return Response.json({ error: "Password's is not equal!"}, { status: 400 });
 
     const parsedUrl = new URL(url);
-    const user_id = BigInt(parsedUrl.searchParams.get("user_id"));
+    
+    const userIdParam = parsedUrl.searchParams.get("user_id");
+    if (!userIdParam) return Response.json({ error: "Missing user_id in URL!"}, { status: 400 });
+    const user_id = BigInt(userIdParam);
+
     const secret = parsedUrl.searchParams.get("secret");
+    if (!secret) return Response.json({ error: "Missing secret in URL!"}, { status: 400 });
 
     const user = await findAuthUserById(user_id) as AuthUser;
     if (!user) return Response.json({ error: "User is not exists!"}, { status: 400 });
