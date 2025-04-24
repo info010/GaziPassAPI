@@ -5,7 +5,10 @@ const config: Config = {
     testEnvironment: "node",
     roots: ["<rootDir>/test"],
     maxWorkers: 1,
-    detectOpenHandles: true
+    detectOpenHandles: true,
+    moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/$1'
+    }
 }
 
 export default config;

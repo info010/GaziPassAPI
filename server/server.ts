@@ -6,6 +6,9 @@ import { loggingHandler } from "@/server/middleware/loggingHandler";
 import { corsHandler } from "@/server/middleware/corsHandler";
 import { routeNotFound } from '@/server/middleware/routeNotFound';
 import { server, SERVER_HOSTNAME, SERVER_PORT } from "@/server/config/config";
+import "reflect-metadata";
+import { defineRoutes } from "@/server/modules/routes";
+import MainController from "@/server/controllers/main";
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -21,11 +24,15 @@ export const Main = () => {
     application.use(corsHandler as RequestHandler);
 
     logging.log("Define Controller Routing")
+    defineRoutes([MainController], application);
+
+    /*
     application.get("/main/healthcheck", (req, res, next) => {
         return res.status(200).json({
             hello: "world!"
         });
     });
+    */
 
     logging.log("Define Controller Routing");
     application.use(routeNotFound);
