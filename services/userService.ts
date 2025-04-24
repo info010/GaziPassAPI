@@ -1,6 +1,7 @@
 import { db } from "@/utils/db";
 import { Post, Publisher, User } from "@/utils/schemaManager";
 import { getPostById, getPostsByUser } from "./postService";
+import { RowDataPacket } from "mysql2";
 
 export const createUser = async (
   id: bigint,
@@ -10,7 +11,7 @@ export const createUser = async (
 ) => {
   const signup_time = BigInt(Date.now());
 
-  await db.query(
+  await db.query<RowDataPacket[]>(
     "INSERT INTO users (id, username, email, verification, signup_time) VALUES (?, ?, ?, ?, ?)",
     [id, username, email, verification, signup_time]
   );
@@ -31,7 +32,7 @@ export const createUser = async (
 };
 
 export const getUserById = async (id: bigint) => {
-  const [rows] = await db.query("SELECT * FROM users WHERE id = ? LIMIT 1", [
+  const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM users WHERE id = ? LIMIT 1", [
     id,
   ]);
 
@@ -68,14 +69,14 @@ export const followTag = async (user_id: bigint, tag: string) => {
 };
 
 export const unfollowTag = async (user_id: bigint, tag: string) => {
-  await db.query(
+  await db.query<RowDataPacket[]>(
     "DELETE FROM user_following_tags WHERE user_id = ? AND tag = ?",
     [user_id, tag]
   );
 };
 
 export const getFollowedTags = async (user_id: bigint) => {
-  const [rows] = await db.query(
+  const [rows] = await db.query<RowDataPacket[]>(
     "SELECT tag FROM user_following_tags WHERE user_id = ?",
     [user_id]
   );
@@ -104,7 +105,7 @@ export const unfollowPublisher = async (
 };
 
 export const getFollowedPublishers = async (user_id: bigint) => {
-  const [ids] = await db.query(
+  const [ids] = await db.query<RowDataPacket[]>(
     "SELECT publisher_id FROM user_following_publishers WHERE user_id = ?",
     [user_id]
   );
@@ -138,7 +139,7 @@ export const removeFavoritePost = async (user_id: bigint, post_id: bigint) => {
 };
 
 export const getFavoritePosts = async (user_id: bigint) => {
-  const [rows] = await db.query(
+  const [rows] = await db.query<RowDataPacket[]>(
     "SELECT post_id FROM user_favorites WHERE user_id = ?",
     [user_id]
   );

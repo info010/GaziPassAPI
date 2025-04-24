@@ -4,9 +4,9 @@
   "description": "A api for GaziPass app's",
   "main": "server/server.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rmdir build/ && tsc",
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register server/server.ts",
-    "test": "jest --config jest.config.ts --detectOpenHandles --coverage --maxWorkers=1"
+    "test": "jest --config jest.config.ts --coverage"
   },
   "keywords": [],
   "author": "@/server/server.ts",
@@ -16,6 +16,10 @@
     "@hadron/quark": "npm:@jsr/hadron__quark@^1.0.1",
     "@thehadron/lepton": "^0.0.1",
     "express": "^4.18.2",
+    "bcryptjs": "^3.0.2",
+ 		"jsonwebtoken": "^9.0.2",
+ 		"mysql2": "^3.14.0",
+ 		"nodemailer": "^6.10.1",
     "reflect-metadata": "^0.2.1"
   },
   "devDependencies": {

@@ -1,6 +1,7 @@
 import { db } from "@/utils/db";
 import Quark from "@hadron/quark/_dist/src"
 import { Publisher, Post } from "@/utils/schemaManager";
+import { RowDataPacket } from "mysql2";
 
 const quark = new Quark(2);
 
@@ -14,7 +15,7 @@ export const createPost = async (
   const id = quark.generate();
   const upvote = 0;
 
-  await db.query(
+  await db.query<RowDataPacket[]>(
     "INSERT INTO posts (id, title, description, upvote, url, publisher_id) VALUES (?, ?, ?, ?, ?, ?)",
     [id, title, description, upvote, url, publisher_id]
   );
@@ -26,13 +27,13 @@ export const createPost = async (
 };
 
 export const getPostById = async (post_id: bigint) => {
-  const [posts_rows] = await db.query(
+  const [posts_rows] = await db.query<RowDataPacket[]>(
     "SELECT * FROM posts WHERE id = ? LIMIT 1",
     [post_id]
   );
   if (!posts_rows[0]) return null;
 
-  const [publishers_rows] = await db.query(
+  const [publishers_rows] = await db.query<RowDataPacket[]>(
     "SELECT * FROM publishers WHERE id = ? LIMIT 1",
     [posts_rows[0].publisher_id]
   );
@@ -43,7 +44,7 @@ export const getPostById = async (post_id: bigint) => {
     verification: publishers_rows[0].verification,
   };
 
-  const [tags_rows] = await db.query(
+  const [tags_rows] = await db.query<RowDataPacket[]>(
     "SELECT tag FROM post_tags WHERE post_id = ?",
     [posts_rows[0].id]
   );
@@ -63,7 +64,7 @@ export const getPostById = async (post_id: bigint) => {
 };
 
 export const getAllPosts = async () => {
-  const [rows] = await db.query("SELECT id FROM posts");
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id FROM posts");
 
   const postIds: bigint[] = rows[0].map((row: any) => BigInt(row.id));
 
@@ -75,7 +76,7 @@ export const getAllPosts = async () => {
 };
 
 export const getPostsByUser = async (id: bigint) => {
-  const [rows] = await db.query("SELECT * FROM user_posts WHERE user_id = ?", [id]);
+  const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM user_posts WHERE user_id = ?", [id]);
 
   const postIds: bigint[] = rows[0].map((row: any) => BigInt(row.post_id));
   
@@ -91,7 +92,7 @@ export const getPostsByTags = async (...tags: string[]) => {
 
   const placeholders = tags.map(() => "?").join(", ");
 
-  const [rows] = await db.query(
+  const [rows] = await db.query<RowDataPacket[]>(
     `SELECT post_id FROM post_tags WHERE tag IN (${placeholders}) GROUP BY post_id HAVING COUNT(DISTINCT tag) = ?`,
     [...tags, tags.length]
   );
