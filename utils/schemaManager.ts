@@ -41,7 +41,7 @@ export const SecretPayloadSchema = lepton.object({
 });
 
 export const PublisherSchema = AuthUserSchema.omit(["password"]).extend({
-    verification: lepton.string().optional(),
+    role: lepton.string().optional(), 
 });
 
 export const PostSchema = lepton.object({
@@ -55,7 +55,6 @@ export const PostSchema = lepton.object({
 });
 
 export const UserSchema = PublisherSchema.extend({
-    signupTime: lepton.bigint(),
     posts: lepton.array(PostSchema),
     favorites: lepton.array(PostSchema),
     following_tags: lepton.array(lepton.string()),

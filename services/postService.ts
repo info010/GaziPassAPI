@@ -41,7 +41,7 @@ export const getPostById = async (post_id: bigint) => {
     id: publishers_rows[0].id,
     username: publishers_rows[0].username,
     email: publishers_rows[0].email,
-    verification: publishers_rows[0].verification,
+    role: publishers_rows[0].verification,
   };
 
   const [tags_rows] = await db.query<RowDataPacket[]>(

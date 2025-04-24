@@ -1,4 +1,4 @@
-import { RouteHandler } from "@/library/routes";
+import { RouteHandler } from "@/server/library/routes";
 import { Express, RequestHandler } from "express";
 
 export function defineRoutes(controllers: any, application: Express) {

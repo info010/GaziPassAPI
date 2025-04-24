@@ -1,4 +1,4 @@
-import { TEST } from './config';
+import { TEST } from '@/server/config/config';
 
 const colours = {
     reset: '\x1b[0m',

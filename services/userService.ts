@@ -9,19 +9,17 @@ export const createUser = async (
   email: string,
   verification: string = "user"
 ) => {
-  const signup_time = BigInt(Date.now());
 
   await db.query<RowDataPacket[]>(
-    "INSERT INTO users (id, username, email, verification, signup_time) VALUES (?, ?, ?, ?, ?)",
-    [id, username, email, verification, signup_time]
+    "INSERT INTO users (id, username, email, verification) VALUES (?, ?, ?, ?, ?)",
+    [id, username, email, verification]
   );
 
   const user: User = {
     id: id,
     username: username,
     email: email,
-    verification: verification,
-    signupTime: signup_time,
+    role: verification,
     posts: [],
     favorites: [],
     following_tags: [],
@@ -45,8 +43,7 @@ export const getUserById = async (id: bigint) => {
     id: rows[0].id,
     username: rows[0].username,
     email: rows[0].email,
-    verification: rows[0].verification,
-    signupTime: rows[0].signup_time,
+    role: rows[0].verification,
     posts: posts ?? [],
     favorites: favorites ?? [],
     following_tags: following_tags ?? [],

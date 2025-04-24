@@ -53,8 +53,7 @@ CREATE IF EXISTS TABLE users (
   id BIGINT PRIMARY KEY,
   username VARCHAR(255),
   email VARCHAR(255) UNIQUE,
-  verification VARCHAR(255) DEFAULT 'user',
-  signup_time BIGINT
+  verification VARCHAR(255) DEFAULT 'user'
 );
 `;
 
