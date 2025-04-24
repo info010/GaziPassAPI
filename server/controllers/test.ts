@@ -2,7 +2,7 @@ import { Request , Response , NextFunction } from "express";
 import { Controller } from "@/server/decorators/controller";
 import { Route } from "@/server/decorators/route";
 import Joi from "joi";
-import { Validate } from "@/server/decorators/validate";
+import { Validate } from "@/server/middleware/validate";
 
 const postHealthCheckValidation = Joi.object({
     name: Joi.string().required(),
@@ -10,7 +10,7 @@ const postHealthCheckValidation = Joi.object({
 });
 
 @Controller()
-class MainController {
+class TestController {
     @Route("get", "/healthcheck")
     getHealthCheck(req: Request, res: Response, next: NextFunction) {
         logging.log("Healthcheck called successfully!");
@@ -25,4 +25,4 @@ class MainController {
     }
 }
 
-export default MainController;
+export default TestController;

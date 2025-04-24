@@ -1,17 +1,42 @@
 import mysql from 'mysql2/promise';
+import { DB_HOST, DB_NAME, DB_PASS, DB_USER } from "@/server/config/config";
+
+async function ensureDatabaseExists() {
+  const connection = await mysql.createConnection({
+    host: DB_HOST,
+    user: DB_USER,
+    password: DB_PASS,
+  });
+
+  const [rows] = await connection.query(
+    `SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?`,
+    [DB_NAME]
+  );
+
+  if ((rows as any[]).length > 0) {
+    logging.log(`Database "${DB_NAME}" is exists.`);
+  } else {
+    await connection.query(`CREATE DATABASE \`${DB_NAME}\`;`);
+    logging.warn(`Database "${DB_NAME}" was created.`);
+  }
+
+  await connection.end();
+}
+
+ensureDatabaseExists();
 
 export const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASS,
+  database: DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
 });
 
 const secretPayloadTable = `
-CREATE IF EXISTS TABLE secret_payloads (
+CREATE TABLE IF NOT EXISTS secret_payloads (
   email VARCHAR(255) UNIQUE,
   token VARCHAR(255),
   expire_at BIGINT,
@@ -20,16 +45,16 @@ CREATE IF EXISTS TABLE secret_payloads (
 `;
 
 const publisherTable = `
-CREATE IF EXISTS TABLE publishers (
+CREATE TABLE IF NOT EXISTS publishers (
   id BIGINT PRIMARY KEY,
   username VARCHAR(255),
   email VARCHAR(255) UNIQUE,
-  verification VARCHAR(255) DEFAULT 'user'
+  role VARCHAR(255) DEFAULT 'user'
 );
 `;
 
 const postTable = `
-CREATE IF EXISTS TABLE posts (
+CREATE TABLE IF NOT EXISTS posts (
   id BIGINT PRIMARY KEY,
   title VARCHAR(255),
   description VARCHAR(255),
@@ -41,7 +66,7 @@ CREATE IF EXISTS TABLE posts (
 `;
 
 const postTagsTable = `
-CREATE IF EXISTS TABLE post_tags (
+CREATE TABLE IF NOT EXISTS post_tags (
   post_id BIGINT,
   tag VARCHAR(255),
   FOREIGN KEY (post_id) REFERENCES posts(id)
@@ -49,16 +74,16 @@ CREATE IF EXISTS TABLE post_tags (
 `;
 
 const userTable = `
-CREATE IF EXISTS TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id BIGINT PRIMARY KEY,
   username VARCHAR(255),
   email VARCHAR(255) UNIQUE,
-  verification VARCHAR(255) DEFAULT 'user'
+  role VARCHAR(255) DEFAULT 'user'
 );
 `;
 
 const userPostsTable = `
-CREATE IF EXISTS TABLE user_posts (
+CREATE TABLE IF NOT EXISTS user_posts (
   user_id BIGINT,
   post_id BIGINT,
   FOREIGN KEY (user_id) REFERENCES users(id),
@@ -67,7 +92,7 @@ CREATE IF EXISTS TABLE user_posts (
 `;
 
 const userFollowingTagsTable = `
-CREATE IF EXISTS TABLE user_following_tags (
+CREATE TABLE IF NOT EXISTS user_following_tags (
   user_id BIGINT,
   tag VARCHAR(255),
   FOREIGN KEY (user_id) REFERENCES users(id)
@@ -75,7 +100,7 @@ CREATE IF EXISTS TABLE user_following_tags (
 `;
 
 const userFavoritesTable = `
-CREATE IF EXISTS TABLE user_favorites (
+CREATE TABLE IF NOT EXISTS user_favorites (
   user_id BIGINT,
   post_id BIGINT,
   FOREIGN KEY (user_id) REFERENCES users(id),
@@ -84,7 +109,7 @@ CREATE IF EXISTS TABLE user_favorites (
 `;
 
 const userFollowingPublishersTable = `
-CREATE IF EXISTS TABLE user_following_publishers (
+CREATE TABLE IF NOT EXISTS user_following_publishers (
   user_id BIGINT,
   publisher_id BIGINT,
   FOREIGN KEY (user_id) REFERENCES users(id),
@@ -93,7 +118,7 @@ CREATE IF EXISTS TABLE user_following_publishers (
 `;
 
 const authUserTable = `
-CREATE IF EXISTS TABLE auth_users (
+CREATE TABLE IF NOT EXISTS auth_users (
   id BIGINT PRIMARY KEY,
   username VARCHAR(255),
   email VARCHAR(255) UNIQUE,
@@ -114,6 +139,21 @@ const tables = [
   authUserTable,
 ];
 
-tables.forEach((element) => {
-  db.execute(element);
-});
+export async function createTables() {
+  tables.forEach((element) => {
+    logging.info("Table create or exists: " + element.valueOf())
+    db.execute(element);
+  });
+}
+
+export async function checkConnection() {
+  try {
+      const conn = await db.getConnection();
+      await conn.ping(); 
+      conn.release();
+
+      logging.log('MySQL connection success!');
+  } catch (err) {
+      logging.error('MySQL connection has error:', err);
+  }
+}

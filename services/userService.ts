@@ -1,25 +1,24 @@
 import { db } from "@/utils/db";
 import { Post, Publisher, User } from "@/utils/schemaManager";
 import { getPostById, getPostsByUser } from "./postService";
-import { RowDataPacket } from "mysql2";
+import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export const createUser = async (
   id: bigint,
   username: string,
   email: string,
-  verification: string = "user"
+  role: string = "user"
 ) => {
-
-  await db.query<RowDataPacket[]>(
-    "INSERT INTO users (id, username, email, verification) VALUES (?, ?, ?, ?, ?)",
-    [id, username, email, verification]
+  await db.query<ResultSetHeader>(
+    "INSERT INTO users (id, username, email, role) VALUES (?, ?, ?, ?)",
+    [id, username, email, role]
   );
 
   const user: User = {
-    id: id,
-    username: username,
-    email: email,
-    role: verification,
+    id,
+    username,
+    email,
+    role: role,
     posts: [],
     favorites: [],
     following_tags: [],
@@ -30,9 +29,12 @@ export const createUser = async (
 };
 
 export const getUserById = async (id: bigint) => {
-  const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM users WHERE id = ? LIMIT 1", [
-    id,
-  ]);
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT * FROM users WHERE id = ? LIMIT 1",
+    [id]
+  );
+
+  if (rows.length === 0) return null;
 
   const posts: Post[] = await getPostsByUser(id);
   const favorites: Post[] = await getFavoritePosts(id);
@@ -40,33 +42,33 @@ export const getUserById = async (id: bigint) => {
   const following_publishers: Publisher[] = await getFollowedPublishers(id);
 
   const user: User = {
-    id: rows[0].id,
+    id: BigInt(rows[0].id),
     username: rows[0].username,
     email: rows[0].email,
-    role: rows[0].verification,
-    posts: posts ?? [],
-    favorites: favorites ?? [],
-    following_tags: following_tags ?? [],
-    following_publishers: following_publishers ?? [],
+    role: rows[0].role,
+    posts,
+    favorites,
+    following_tags,
+    following_publishers,
   };
 
   return user;
 };
 
 export const deleteUser = async (id: bigint) => {
-  await db.query("DELETE FROM users WHERE id = ?", [id]);
+  await db.query<ResultSetHeader>("DELETE FROM users WHERE id = ?", [id]);
 };
 
-//Followed tags
+// Follow Tags
 export const followTag = async (user_id: bigint, tag: string) => {
-  await db.query(
+  await db.query<ResultSetHeader>(
     "INSERT IGNORE INTO user_following_tags (user_id, tag) VALUES (?, ?)",
     [user_id, tag]
   );
 };
 
 export const unfollowTag = async (user_id: bigint, tag: string) => {
-  await db.query<RowDataPacket[]>(
+  await db.query<ResultSetHeader>(
     "DELETE FROM user_following_tags WHERE user_id = ? AND tag = ?",
     [user_id, tag]
   );
@@ -77,59 +79,57 @@ export const getFollowedTags = async (user_id: bigint) => {
     "SELECT tag FROM user_following_tags WHERE user_id = ?",
     [user_id]
   );
-  return rows[0].map((row: any) => row.tag);
+  return rows.map((row) => row.tag);
 };
 
-//Followed publishers
-export const followPublisher = async (
-  user_id: bigint,
-  publisher_id: bigint
-) => {
-  await db.query(
+// Follow Publishers
+export const followPublisher = async (user_id: bigint, publisher_id: bigint) => {
+  await db.query<ResultSetHeader>(
     "INSERT IGNORE INTO user_following_publishers (user_id, publisher_id) VALUES (?, ?)",
     [user_id, publisher_id]
   );
 };
 
-export const unfollowPublisher = async (
-  user_id: bigint,
-  publisher_id: bigint
-) => {
-  await db.query(
+export const unfollowPublisher = async (user_id: bigint, publisher_id: bigint) => {
+  await db.query<ResultSetHeader>(
     "DELETE FROM user_following_publishers WHERE user_id = ? AND publisher_id = ?",
     [user_id, publisher_id]
   );
 };
 
 export const getFollowedPublishers = async (user_id: bigint) => {
-  const [ids] = await db.query<RowDataPacket[]>(
+  const [rows] = await db.query<RowDataPacket[]>(
     "SELECT publisher_id FROM user_following_publishers WHERE user_id = ?",
     [user_id]
   );
 
-  if (ids[0].length === 0) return [];
+  const publisherIds = rows.map((row) => row.publisher_id);
+  if (publisherIds.length === 0) return [];
 
-  const placeholders = ids[0].map(() => "?").join(", ");
-  const values = ids[0].map((row: any) => row.publisher_id);
-
-  const [publishers] = await db.query(
+  const placeholders = publisherIds.map(() => "?").join(", ");
+  const [publishers] = await db.query<RowDataPacket[]>(
     `SELECT * FROM publishers WHERE id IN (${placeholders})`,
-    values
+    publisherIds
   );
 
-  return publishers as Publisher[];
+  return publishers.map((row) => ({
+    id: BigInt(row.id),
+    username: row.username,
+    email: row.email,
+    role: row.role,
+  })) as Publisher[];
 };
 
-//Followed favorites
+// Favorite Posts
 export const addFavoritePost = async (user_id: bigint, post_id: bigint) => {
-  await db.query(
+  await db.query<ResultSetHeader>(
     "INSERT IGNORE INTO user_favorites (user_id, post_id) VALUES (?, ?)",
     [user_id, post_id]
   );
 };
 
 export const removeFavoritePost = async (user_id: bigint, post_id: bigint) => {
-  await db.query(
+  await db.query<ResultSetHeader>(
     "DELETE FROM user_favorites WHERE user_id = ? AND post_id = ?",
     [user_id, post_id]
   );
@@ -140,8 +140,9 @@ export const getFavoritePosts = async (user_id: bigint) => {
     "SELECT post_id FROM user_favorites WHERE user_id = ?",
     [user_id]
   );
-  const postIds = rows[0].map((row: any) => BigInt(row.post_id));
 
-  const posts = await Promise.all(postIds.map((id: bigint) => getPostById(id)));
-  return posts as Post[];
+  const postIds = rows.map((row) => BigInt(row.post_id));
+
+  const posts = await Promise.all(postIds.map((id) => getPostById(id)));
+  return posts.filter(Boolean) as Post[];
 };
