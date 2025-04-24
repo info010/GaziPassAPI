@@ -1,5 +1,5 @@
 import { db } from "@/utils/db";
-import Quark from "@hadron/quark"
+import Quark from "@hadron/quark/_dist/src"
 import { Publisher, Post } from "@/utils/schemaManager";
 
 const quark = new Quark(2);
