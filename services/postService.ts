@@ -1,5 +1,5 @@
 import { db } from "@/utils/db";
-import { Quark } from "@thehadron/quark";
+import Quark from "@hadron/quark"
 import { Publisher, Post } from "@/utils/schemaManager";
 
 const quark = new Quark(2);
@@ -68,7 +68,7 @@ export const getAllPosts = async () => {
   const postIds: bigint[] = rows[0].map((row: any) => BigInt(row.id));
 
   const posts: Post[] = await Promise.all(
-    postIds.map((id: bigint) => getPostById(id) as Post)
+    postIds.map((id: bigint) => getPostById(id) as Promise<Post>)
   );
 
   return posts;
@@ -80,7 +80,7 @@ export const getPostsByUser = async (id: bigint) => {
   const postIds: bigint[] = rows[0].map((row: any) => BigInt(row.post_id));
   
   const posts: Post[] = await Promise.all(
-      postIds.map((id: bigint) => getPostById(id) as Post)
+      postIds.map((id: bigint) => getPostById(id) as Promise<Post>)
   );
   
   return posts;
@@ -99,7 +99,7 @@ export const getPostsByTags = async (...tags: string[]) => {
   const postIds: bigint[] = rows[0].map((row: any) => BigInt(row.post_id));
 
   const posts: Post[] = await Promise.all(
-    postIds.map((id: bigint) => getPostById(id) as Post)
+    postIds.map((id: bigint) => getPostById(id) as Promise<Post>)
   );
 
   return posts;

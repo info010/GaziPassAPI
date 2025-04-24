@@ -1,10 +1,6 @@
-// utils/userService.ts
 import { db } from "@/utils/db";
-import { Quark } from "@thehadron/quark";
 import { Post, Publisher, User } from "@/utils/schemaManager";
 import { getPostById, getPostsByUser } from "./postService";
-
-const quark = new Quark(3);
 
 export const createUser = async (
   id: bigint,

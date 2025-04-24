@@ -1,5 +1,5 @@
 import { db } from "@/utils/db";
-import { Quark } from "@thehadron/quark";
+import Quark from "@hadron/quark"
 import { AuthUser, SecretPayload } from "@/utils/schemaManager";
 import { generateSecretToken } from "@/utils/crypt";
 import { createUser } from "./userService";
