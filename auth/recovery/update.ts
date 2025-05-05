@@ -1,5 +1,5 @@
 import { AuthUser, recoveryUpdateSchema } from "@/utils/schemaManager";
-import { findAuthUserById, updatePassoword, verifyRecovery } from "@/services/authService";
+import { findAuthUserById, updateAuthUser, verifyRecovery } from "@/services/authService";
 import { hashPassword, turnstileVertify } from "@/utils/crypt";
 
 export async function POST(req: Request) {
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     const hashedPassword = await hashPassword(password);
 
-    await updatePassoword( user.id, hashedPassword);
+    await updateAuthUser( user.id, user.email, user.username, hashedPassword);
 
     return Response.json({ success: true });
 }

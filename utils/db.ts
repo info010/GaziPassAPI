@@ -33,6 +33,8 @@ export const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  supportBigNumbers: true,
+  bigNumberStrings: true,
 });
 
 const secretPayloadTable = `
@@ -141,7 +143,6 @@ const tables = [
 
 export async function createTables() {
   tables.forEach((element) => {
-    logging.info("Table create or exists: " + element.valueOf())
     db.execute(element);
   });
 }

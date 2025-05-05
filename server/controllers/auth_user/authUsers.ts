@@ -1,42 +1,51 @@
 import { Controller } from "@/server/decorators/controller";
-import { MySQLCreate } from "@/server/decorators/mysql/create";
-import { MySQLDelete } from "@/server/decorators/mysql/delete";
-import { MySQLGet } from "@/server/decorators/mysql/get";
-import { MySQLGetAll } from "@/server/decorators/mysql/getAll";
-import { MySQLQuery } from "@/server/decorators/mysql/query";
-import { MySQLUpdate } from "@/server/decorators/mysql/update";
 import { Route } from "@/server/decorators/route";
 import { Request, Response, NextFunction } from "express";
+
+import { MySQLGetAll } from "@/server/decorators/mysql/getAll";
+import { MySQLQuery } from "@/server/decorators/mysql/query";
+
+import { CreateAuthUser } from "@/services/AuthUserService/createAuthUser";
+import { DeleteAuthUser } from "@/services/AuthUserService/deleteAuthUser";
+import { GetAuthUserByEmail } from "@/services/AuthUserService/getAuthUserByEmail";
+import { GetAuthUserByID } from "@/services/AuthUserService/getAuthUserById";
+import { UpdateAuthUser } from "@/services/AuthUserService/updateAuthUser";
 
 @Controller("/auth-users")
 class AuthUsersController {
 
-  @Route("get", "/get/all")
+  @Route("get", "/getAll")
   @MySQLGetAll("auth_users")
   getAll(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json(req.mysqlGetAll);
   }
 
-  @Route("get", "/get/:id")
-  @MySQLGet("auth_users")
-  get(req: Request, res: Response, next: NextFunction) {
-    return res.status(200).json(req.mysqlGet);
+  @Route("get", "/getById/:id")
+  @GetAuthUserByID()
+  getById(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json(req.authUser);
+  }
+
+  @Route("get", "/getByEmail/:email")
+  @GetAuthUserByEmail()
+  getByEmail(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json(req.authUser);
   }
 
   @Route("post", "/create")
-  @MySQLCreate("auth_users")
+  @CreateAuthUser()
   create(req: Request, res: Response, next: NextFunction) {
-    return res.status(201).json(req.mysqlCreate);
+    return res.status(201).json(req.authUser);
   }
 
   @Route("put", "/update/:id")
-  @MySQLUpdate("auth_users")
+  @UpdateAuthUser()
   update(req: Request, res: Response, next: NextFunction) {
-    return res.status(200).json(req.mysqlUpdate);
+    return res.status(200).json(req.authUser);
   }
 
   @Route("delete", "/delete/:id")
-  @MySQLDelete("auth_users")
+  @DeleteAuthUser()
   delete(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json({ message: "Auth user deleted" });
   }
@@ -44,7 +53,7 @@ class AuthUsersController {
   @Route("post", "/search")
   @MySQLQuery("auth_users")
   query(req: Request, res: Response, next: NextFunction) {
-    return res.status(200).json(req.mysqlGetAll);
+    return res.status(200).json(req.mysqlQuery);
   }
 }
 

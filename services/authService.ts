@@ -1,5 +1,5 @@
 import { db } from "@/utils/db";
-import Quark from "@hadron/quark/_dist/src";
+import { Quark } from "@thehadron/quark";
 import { AuthUser, SecretPayload } from "@/utils/schemaManager";
 import { generateSecretToken } from "@/utils/crypt";
 import { createUser } from "./userService";
@@ -17,7 +17,7 @@ export const findAuthUserByEmail = async (email: string) => {
   if (!row) return null;
 
   const auth_user: AuthUser = {
-    id: BigInt(row.id),
+    id: row.id,
     username: row.username,
     email: row.email,
     password: row.password,
@@ -36,7 +36,7 @@ export const findAuthUserById = async (id: bigint) => {
   if (!row) return null;
 
   const auth_user: AuthUser = {
-    id: BigInt(row.id),
+    id: row.id,
     username: row.username,
     email: row.email,
     password: row.password,
@@ -60,7 +60,7 @@ export const createAuthUser = async (
   await createUser(id, username, email);
 
   const auth_user: AuthUser = {
-    id: BigInt(id),
+    id,
     username,
     email,
     password,
@@ -69,24 +69,14 @@ export const createAuthUser = async (
   return auth_user;
 };
 
-export const updateAuthUser = async (id: bigint, email: string, username: string) => {
+export const updateAuthUser = async (id: bigint, email: string, username: string, password: string) => {
   await db.query<ResultSetHeader>(
-    `UPDATE auth_users SET email = ?, username = ? WHERE id = ?`,
-    [email, username, id]
+    `UPDATE auth_users SET email = ?, username = ?, password = ? WHERE id = ?`,
+    [email, username, password, id]
   );
 
   const updatedUser = await findAuthUserById(id);
   return updatedUser;
-};
-
-export const updatePassword = async (id: bigint, password: string) => {
-  await db.query<ResultSetHeader>(
-    `UPDATE auth_users SET password = ? WHERE id = ?`,
-    [password, id]
-  );
-
-  const updated = await findAuthUserById(id);
-  return updated;
 };
 
 export const deleteAuthUser = async (id: bigint) => {
@@ -98,7 +88,7 @@ export const deleteAuthUser = async (id: bigint) => {
 };
 
 export const generateRecovery = async (email: string) => {
-  const secret = generateSecretToken();
+  const token = generateSecretToken();
 
   const [exists] = await db.query<RowDataPacket[]>(
     "SELECT * FROM secret_payloads WHERE email = ? LIMIT 1",
@@ -109,15 +99,22 @@ export const generateRecovery = async (email: string) => {
     return exists[0].token;
   }
 
-  const expire_at = Date.now() + 1000 * 60 * 5;
-  const create_at = Date.now();
+  const expires_at = BigInt(Date.now() + 1000 * 60 * 5);
+  const creates_at = BigInt(Date.now());
 
-  await db.query<ResultSetHeader>(
+  const [row] = await db.query<ResultSetHeader>(
     "INSERT INTO secret_payloads (email, token, expire_at, create_at) VALUES (?, ?, ?, ?)",
-    [email, secret, expire_at, create_at]
+    [email, token, expires_at, creates_at]
   );
 
-  return secret;
+  const payload: SecretPayload = {
+    email,
+    expires_at,
+    token,
+    creates_at
+  }
+
+  return payload;
 };
 
 export const verifyRecovery = async (

@@ -13,8 +13,8 @@
   "license": "ISC",
   "packageManager": "pnpm@10.6.5",
   "dependencies": {
-    "@hadron/quark": "npm:@jsr/hadron__quark@^1.0.1",
     "@thehadron/lepton": "^0.0.1",
+    "@thehadron/quark": "^1.0.1",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/nodemailer": "^6.4.17",
     "@types/reflect-metadata": "^0.1.0",

@@ -1,5 +1,5 @@
 import { db } from "@/utils/db";
-import Quark from "@hadron/quark/_dist/src";
+import { Quark } from "@thehadron/quark";
 import { Publisher, Post } from "@/utils/schemaManager";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 

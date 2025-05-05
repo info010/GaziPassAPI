@@ -17,8 +17,7 @@ export function MySQLCreate(table: string) {
         const [result] = await db.query<ResultSetHeader>(sqlQuery, values);
 
         if (result.affectedRows > 0) {
-          req.mysqlCreate = { ...req.body, id: result.insertId }; // Adding the ID of the newly created row
-          return res.status(201).json(req.mysqlCreate);
+          req.mysqlCreate = { ...req.body};
         } else {
           return res.status(400).json({ error: "Failed to create record." });
         }

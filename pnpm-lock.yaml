@@ -8,12 +8,12 @@ importers:
 
   .:
     dependencies:
-      '@hadron/quark':
-        specifier: npm:@jsr/hadron__quark@^1.0.1
-        version: '@jsr/hadron__quark@1.0.1'
       '@thehadron/lepton':
         specifier: ^0.0.1
         version: 0.0.1
+      '@thehadron/quark':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@types/jsonwebtoken':
         specifier: ^9.0.9
         version: 9.0.9
@@ -358,9 +358,6 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@jsr/hadron__quark@1.0.1':
-    resolution: {integrity: sha512-vQAcrLdsnOintaCT1WXbDochQudiezXWBtTOq/Oq3okRRQSRIYBb0nL3seoKlZ2zwG+1I5M9bxCFAQJbFhgueQ==, tarball: https://npm.jsr.io/~/11/@jsr/hadron__quark/1.0.1.tgz}
-
   '@noble/hashes@1.8.0':
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
     engines: {node: ^14.21.3 || >=16}
@@ -388,6 +385,10 @@ packages:
 
   '@thehadron/lepton@0.0.1':
     resolution: {integrity: sha512-ZZBHlZ+Pz5FxC+JFcnEH1pa4t9EQTsNJtXJOISstWfGj0QrPSGo9z6dUFmQb2U0ltXia+n1WrQs2r4DdeliFuQ==}
+    engines: {node: '>=10.0.0'}
+
+  '@thehadron/quark@1.0.1':
+    resolution: {integrity: sha512-8ascpSYlyNdLcrkIFSx3ACW7VXoTA7C470vcTZbUd/i7aMYtV2nK95Uh7wrO1C19qbCvow5MBnCFFLtMNuNBvA==}
     engines: {node: '>=10.0.0'}
 
   '@tsconfig/node10@1.0.11':
@@ -2280,8 +2281,6 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@jsr/hadron__quark@1.0.1': {}
-
   '@noble/hashes@1.8.0': {}
 
   '@paralleldrive/cuid2@2.2.2':
@@ -2307,6 +2306,8 @@ snapshots:
       '@sinonjs/commons': 3.0.1
 
   '@thehadron/lepton@0.0.1': {}
+
+  '@thehadron/quark@1.0.1': {}
 
   '@tsconfig/node10@1.0.11': {}
 

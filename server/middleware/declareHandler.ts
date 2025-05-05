@@ -10,6 +10,9 @@ declare global {
       mysqlCreate?: RowDataPacket | undefined;
       mysqlUpdate?: RowDataPacket | undefined;
       mysqlQuery?: RowDataPacket[];
+      authUser?: AuthUser | undefined;
+      publisher?: Publisher | undefined;
+      secretPayload?: SecretPayload | undefined;      
     }
   }
 }
@@ -20,6 +23,9 @@ export function declareHandler(req: Request, res: Response, next: NextFunction) 
     req.mysqlCreate = undefined;
     req.mysqlUpdate = undefined;
     req.mysqlQuery = [];
+    req.authUser = undefined;
+    req.publisher = undefined;
+    req.secretPayload = undefined;
 
     next()    
 }
