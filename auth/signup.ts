@@ -1,5 +1,5 @@
 import { hashPassword, turnstileVertify } from "@/utils/crypt";
-import { createAuthUser, findAuthUserByEmail} from "@/services/authService"
+import { createAuthUser, findAuthUserByEmail} from "@/services/DeprecatedServices/authService"
 import { signUpSchema } from "@/utils/schemaManager";
 
 export async function POST(req: Request) {

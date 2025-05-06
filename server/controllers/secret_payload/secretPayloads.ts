@@ -1,24 +1,24 @@
 import { Request, Response, NextFunction } from "express";
 import { Controller } from "@/server/decorators/controller";
-import { MySQLCreate } from "@/server/decorators/mysql/create";
 import { MySQLDelete } from "@/server/decorators/mysql/delete";
-import { MySQLGet } from "@/server/decorators/mysql/get";
 import { MySQLQuery } from "@/server/decorators/mysql/query";
 import { Route } from "@/server/decorators/route";
+import { VerifyRecovery } from "@/services/AuthService/SecretPayloadService/vertifyRecovery";
+import { GenerateRecovery } from "@/services/AuthService/SecretPayloadService/generateRecovery";
 
 @Controller("/secret-payloads")
 class SecretPayloadController {
 
-  @Route("get", "/get/:email")
-  @MySQLGet("secret_payloads")
+  @Route("get", "/verify/:email")
+  @VerifyRecovery()
   get(req: Request, res: Response, next: NextFunction) {
-    return res.status(200).json(req.mysqlGet);
+    return res.status(200).json({ message: "Secret payload is valid" });
   }
 
-  @Route("post", "/create")
-  @MySQLCreate("secret_payloads")
+  @Route("post", "/generate")
+  @GenerateRecovery()
   create(req: Request, res: Response, next: NextFunction) {
-    return res.status(201).json(req.mysqlCreate);
+    return res.status(201).json(req.secretPayload);
   }
 
   @Route("delete", "/delete/:email")
@@ -30,7 +30,7 @@ class SecretPayloadController {
   @Route("post", "/search")
   @MySQLQuery("secret_payloads")
   query(req: Request, res: Response, next: NextFunction) {
-    return res.status(200).json(req.mysqlGetAll);
+    return res.status(200).json(req.mysqlQuery);
   }
 }
 

@@ -17,9 +17,7 @@ export function DeleteAuthUser() {
         const [result] = await db.query<ResultSetHeader>(
           "DELETE FROM auth_users WHERE id = ?",
           [id]
-        );
-
-        
+        );  
 
         if (result.affectedRows === 0) {
           return res.status(404).json({ error: "User not found" });

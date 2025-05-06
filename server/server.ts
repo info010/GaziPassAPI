@@ -23,6 +23,7 @@ import {
   UserFollowingTagsController,
   UserPostController,
 } from "@/server/controllers/exports";
+import { jsonHandler } from "./middleware/jsonHandler";
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -31,6 +32,7 @@ export const Main = async () => {
   logging.log("Initilazin GaziPassAPI");
   application.use(express.urlencoded({ extended: true }));
   application.use(express.json());
+  application.use(jsonHandler);
 
   logging.log("Logging & Configuration");
 
