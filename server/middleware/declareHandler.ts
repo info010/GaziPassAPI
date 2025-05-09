@@ -11,8 +11,10 @@ declare global {
       mysqlUpdate?: RowDataPacket | undefined;
       mysqlQuery?: RowDataPacket[];
       authUser?: AuthUser | undefined;
+      user?: User | undefined;
       publisher?: Publisher | undefined;
-      secretPayload?: SecretPayload | undefined;      
+      secretPayload?: SecretPayload | undefined;
+      post?: Post | undefined;      
     }
   }
 }

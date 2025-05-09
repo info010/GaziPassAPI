@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { db } from "@/utils/db";
-import { RowDataPacket ,ResultSetHeader } from "mysql2";
+import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { AuthUser } from "@/utils/schemaManager";
 import { Quark } from  "@thehadron/quark"
 
@@ -36,7 +36,16 @@ export function CreateAuthUser() {
 
         if (result.affectedRows === 0) {
           return res.status(400).json({ error: "Failed to create AuthUser." });
-        }        
+        }      
+        
+        const [rows] = await db.query<ResultSetHeader>(
+          "INSERT INTO users (id, username, email) VALUES (?, ?, ?)",
+          [id, username, email]
+        );
+
+        if (rows.affectedRows === 0) {
+          return res.status(400).json({ error: "Failed to create User." });
+        }  
 
         const authUser: AuthUser = {
           id,

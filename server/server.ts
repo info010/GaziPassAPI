@@ -24,6 +24,7 @@ import {
   UserPostController,
 } from "@/server/controllers/exports";
 import { jsonHandler } from "./middleware/jsonHandler";
+import { functionHandler } from "./middleware/functionHandler";
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -33,6 +34,7 @@ export const Main = async () => {
   application.use(express.urlencoded({ extended: true }));
   application.use(express.json());
   application.use(jsonHandler);
+//  application.use(functionHandler);
 
   logging.log("Logging & Configuration");
 

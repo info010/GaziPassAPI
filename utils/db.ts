@@ -41,17 +41,7 @@ const secretPayloadTable = `
 CREATE TABLE IF NOT EXISTS secret_payloads (
   email VARCHAR(255) UNIQUE,
   token VARCHAR(255),
-  expire_at BIGINT,
-  create_at BIGINT
-);
-`;
-
-const publisherTable = `
-CREATE TABLE IF NOT EXISTS publishers (
-  id BIGINT PRIMARY KEY,
-  username VARCHAR(255),
-  email VARCHAR(255) UNIQUE,
-  role VARCHAR(255) DEFAULT 'user'
+  expire_at BIGINT
 );
 `;
 
@@ -63,7 +53,7 @@ CREATE TABLE IF NOT EXISTS posts (
   upvote INT UNSIGNED DEFAULT 0,
   url VARCHAR(255),
   publisher_id BIGINT,
-  FOREIGN KEY (publisher_id) REFERENCES publishers(id)
+  FOREIGN KEY (publisher_id) REFERENCES users(id)
 );
 `;
 
@@ -81,15 +71,6 @@ CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(255),
   email VARCHAR(255) UNIQUE,
   role VARCHAR(255) DEFAULT 'user'
-);
-`;
-
-const userPostsTable = `
-CREATE TABLE IF NOT EXISTS user_posts (
-  user_id BIGINT,
-  post_id BIGINT,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (post_id) REFERENCES posts(id)
 );
 `;
 
@@ -115,7 +96,7 @@ CREATE TABLE IF NOT EXISTS user_following_publishers (
   user_id BIGINT,
   publisher_id BIGINT,
   FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (publisher_id) REFERENCES publishers(id)
+  FOREIGN KEY (publisher_id) REFERENCES users(id)
 );
 `;
 
@@ -129,16 +110,14 @@ CREATE TABLE IF NOT EXISTS auth_users (
 `;
 
 const tables = [
+  authUserTable,
   secretPayloadTable,
-  publisherTable,
   postTable,
   postTagsTable,
   userTable,
-  userPostsTable,
   userFavoritesTable,
   userFollowingTagsTable,
   userFollowingPublishersTable,
-  authUserTable,
 ];
 
 export async function createTables() {

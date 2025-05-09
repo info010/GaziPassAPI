@@ -14,7 +14,7 @@ export const hashPassword = (pwd: string) => hash(pwd, 32);
 export const comparePassword = (pwd: string, hash: string) => compare(pwd, hash);
 
 export const generateSecretToken = () => {
-    return randomBytes(32).toString('hex')
+    return randomBytes(64).toString('hex')
 };
 
 export const turnstileVertify = async (token: string) => {

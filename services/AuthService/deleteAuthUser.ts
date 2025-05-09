@@ -15,7 +15,7 @@ export function DeleteAuthUser() {
         }
 
         const [result] = await db.query<ResultSetHeader>(
-          "DELETE FROM auth_users WHERE id = ?",
+          "DELETE FROM auth_users AND users WHERE id = ?",
           [id]
         );  
 

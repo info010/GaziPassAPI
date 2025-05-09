@@ -1,24 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { db } from "@/utils/db";
 import { RowDataPacket } from "mysql2";
-import { error } from "console";
-
-const verifyRecovery = async (
-    email: string,
-    secret: string
-  ): Promise<boolean> => {
-    const [record] = await db.query<RowDataPacket[]>(
-      "SELECT * FROM secret_payloads WHERE email = ? LIMIT 1",
-      [email]
-    );
-  
-    if (!record[0]) return false;
-  
-    const isValid =
-      record[0].token === secret && BigInt(record[0].expires_at) > BigInt(Date.now());
-  
-    return isValid;
-  };
 
 export function VerifyRecovery() {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {

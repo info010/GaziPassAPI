@@ -9,7 +9,7 @@ import { GenerateRecovery } from "@/services/AuthService/SecretPayloadService/ge
 @Controller("/secret-payloads")
 class SecretPayloadController {
 
-  @Route("get", "/verify/:email")
+  @Route("post", "/verify")
   @VerifyRecovery()
   get(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json({ message: "Secret payload is valid" });

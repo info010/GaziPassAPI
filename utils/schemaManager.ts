@@ -36,8 +36,7 @@ export const AuthUserSchema = lepton.object({
 export const SecretPayloadSchema = lepton.object({
     email: lepton.string(),
     token: lepton.string(),
-    expires_at: lepton.bigint(),
-    creates_at: lepton.bigint()
+    expire_at: lepton.bigint()
 });
 
 export const PublisherSchema = AuthUserSchema.omit(["password"]).extend({

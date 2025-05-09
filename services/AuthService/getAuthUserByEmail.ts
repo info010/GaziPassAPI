@@ -16,17 +16,15 @@ export function GetAuthUserByEmail() {
           [email]
         );
 
-        const row = rows[0];
-
-        if (!row) {
+        if (!rows[0]) {
           return res.status(404).json({ error: "AuthUser not found" });
         }
 
         const auth_user: AuthUser = {
-          id: row.id,
-          username: row.username,
-          email: row.email,
-          password: row.password,
+          id: rows[0].id,
+          username: rows[0].username,
+          email: rows[0].email,
+          password: rows[0].password,
         };
 
         req.authUser = auth_user;

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { db } from "@/utils/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { generateSecretToken } from "@/utils/crypt";
+import { SecretPayload } from "@/utils/schemaManager";
 
 export function GenerateRecovery() {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -28,20 +29,20 @@ export function GenerateRecovery() {
           )
         }
 
-        const expires_at = BigInt(Date.now() + 1000 * 60 * 5);
-        const creates_at = BigInt(Date.now());
+        const expire_at = BigInt(Date.now() + 1000 * 60 * 5);
 
         await db.query<ResultSetHeader>(
-          "INSERT INTO secret_payloads (email, token, expire_at, create_at) VALUES (?, ?, ?, ?)",
-          [email, token, expires_at, creates_at]
+          "INSERT INTO secret_payloads (email, token, expire_at) VALUES (?, ?, ?)",
+          [email, token, expire_at]
         );
 
-        req.secretPayload = {
+        const secretPayload: SecretPayload = {
           email,
           token,
-          expires_at,
-          creates_at,
-        };
+          expire_at
+        }
+
+        req.secretPayload = secretPayload
 
         return originalMethod.call(this, req, res, next);
       } catch (error) {

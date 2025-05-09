@@ -39,7 +39,7 @@ export const getPostById = async (post_id: bigint) => {
   );
 
   const publisher: Publisher = {
-    id: BigInt(publishers_rows[0].id),
+    id: publishers_rows[0].id,
     username: publishers_rows[0].username,
     email: publishers_rows[0].email,
     role: publishers_rows[0].verification,

@@ -6,27 +6,29 @@ import { MySQLGetAll } from "@/server/decorators/mysql/getAll";
 import { MySQLQuery } from "@/server/decorators/mysql/query";
 import { MySQLUpdate } from "@/server/decorators/mysql/update";
 import { Route } from "@/server/decorators/route";
+import { CreatePost } from "@/services/PostService/createPost";
+import { GetPost } from "@/services/PostService/getPost";
 import { Request, Response, NextFunction } from "express";
 
 @Controller("/posts")
 class PostController {
 
-  @Route("get", "/get/all")
+  @Route("get", "/getall")
   @MySQLGetAll("posts")
   getAll(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json(req.mysqlGetAll);
   }
 
   @Route("get", "/get/:id")
-  @MySQLGet("posts")
+  @GetPost()
   get(req: Request, res: Response, next: NextFunction) {
-    return res.status(200).json(req.mysqlGet);
+    return res.status(200).json(req.post);
   }
 
   @Route("post", "/create")
-  @MySQLCreate("posts")
+  @CreatePost()
   create(req: Request, res: Response, next: NextFunction) {
-    return res.status(201).json(req.mysqlCreate);
+    return res.status(201).json(req.post);
   }
 
   @Route("delete", "/delete/:id")
