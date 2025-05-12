@@ -13,18 +13,12 @@ import { declareHandler } from "./middleware/declareHandler";
 import {
   AuthUsersController,
   PostController,
-  PostTagController,
-  PublisherController,
   SecretPayloadController,
   TestController,
   UserController,
-  UserFavoritesController,
-  UserFollowingPublishersController,
-  UserFollowingTagsController,
-  UserPostController,
 } from "@/server/controllers/exports";
 import { jsonHandler } from "./middleware/jsonHandler";
-import { functionHandler } from "./middleware/functionHandler";
+// import { functionHandler } from "./middleware/functionHandler";
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -52,13 +46,7 @@ export const Main = async () => {
       AuthUsersController,
       UserController,
       SecretPayloadController,
-      PublisherController,
       PostController,
-      PostTagController,
-      UserPostController,
-      UserFavoritesController,
-      UserFollowingPublishersController,
-      UserFollowingTagsController,
     ],
     application
   );

@@ -70,7 +70,8 @@ CREATE TABLE IF NOT EXISTS users (
   id BIGINT PRIMARY KEY,
   username VARCHAR(255),
   email VARCHAR(255) UNIQUE,
-  role VARCHAR(255) DEFAULT 'user'
+  role VARCHAR(255) DEFAULT 'user',
+  FOREIGN KEY (id) REFERENCES auth_users(id)
 );
 `;
 

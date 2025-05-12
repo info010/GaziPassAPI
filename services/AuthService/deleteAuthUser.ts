@@ -14,13 +14,24 @@ export function DeleteAuthUser() {
           return res.status(400).json({ error: "Missing ID parameter." });
         }
 
+        //TODO user tablelardan tüm verileri sil, sadece user siliniyor oe
+
         const [result] = await db.query<ResultSetHeader>(
-          "DELETE FROM auth_users AND users WHERE id = ?",
+          "DELETE FROM users WHERE id = ?",
           [id]
-        );  
+        ); 
 
         if (result.affectedRows === 0) {
           return res.status(404).json({ error: "User not found" });
+        }
+
+        const [result_2] = await db.query<ResultSetHeader>(
+          "DELETE FROM auth_users WHERE id = ?",
+          [id]
+        );
+
+        if (result_2.affectedRows === 0) {
+          return res.status(404).json({ error: "AuthUser not found" });
         }
 
         req.body = result.affectedRows > 0;

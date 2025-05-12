@@ -1,10 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { Controller } from "@/server/decorators/controller";
 import { Route } from "@/server/decorators/route";
-import { MySQLGet } from "@/server/decorators/mysql/get";
 import { MySQLGetAll } from "@/server/decorators/mysql/getAll";
 import { MySQLUpdate } from "@/server/decorators/mysql/update";
 import { MySQLQuery } from "@/server/decorators/mysql/query";
+import { GetUser } from "@/services/UserService/getUser";
+import { FollowTag } from "@/services/UserService/TagService/followTag";
+import { UnfollowTag } from "@/services/UserService/TagService/unfollowTag";
+import { FollowPublisher } from "@/services/UserService/PublisherService/followPublisher";
+import { UnfollowPublisher } from "@/services/UserService/PublisherService/unfollowPublisher";
+import { AddFavorite } from "@/services/UserService/FavoritePostService/addFavoritePost";
+import { RemoveFavorite } from "@/services/UserService/FavoritePostService/removeFavoritePost";
 
 @Controller("/users")
 class UserController {
@@ -16,9 +22,63 @@ class UserController {
   }
 
   @Route("get", "/get/:id")
-  @MySQLGet("users")
+  @GetUser()
   get(req: Request, res: Response, next: NextFunction) {
-    return res.status(200).json(req.mysqlGet);
+    return res.status(200).json(req.user);
+  }
+
+  @Route("post", "/follow-tag")
+  @FollowTag()
+  followTag(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json({ message: "Tag's followed" });
+  }
+
+  @Route("delete", "/unfollow-tag/:user_id/tag/:tag")
+  @UnfollowTag()
+  unfollowTag(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json({ message: "Tag's unfollowed" });
+  }
+
+  @Route("get", "/getTags/:id")
+  @GetUser()
+  getFollowingTags(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json(req.user?.following_tags);
+  }
+
+  @Route("post", "/follow-publisher")
+  @FollowPublisher()
+  followPublisher(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json({ message: "Publisher's followed" });
+  }
+
+  @Route("delete", "/unfollow-publisher/:user_id/publisher/:publisher_id")
+  @UnfollowPublisher()
+  unfollowPublisher(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json({ message: "Publisher's unfollowed" });
+  }
+
+  @Route("get", "/getPublishers/:id")
+  @GetUser()
+  getFollowingPublisher(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json(req.user?.following_publishers);
+  }
+
+  @Route("post", "/add-favorite")
+  @AddFavorite()
+  addFavorite(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json({ message: "Post's added favorites" });
+  }
+
+  @Route("delete", "/remove-favorite/:user_id/post/:post_id")
+  @RemoveFavorite()
+  removeFavorite(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json({ message: "Post's removed favorites" });
+  }
+
+  @Route("get", "/getFavorites/:id")
+  @GetUser()
+  getFavorites(req: Request, res: Response, next: NextFunction) {
+    return res.status(200).json(req.user?.favorites);
   }
 
   @Route("put", "/update/:id")
