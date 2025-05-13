@@ -1,5 +1,5 @@
 import { AuthUser, recoveryPasswordSchema } from "@/utils/schemaManager";
-import { findAuthUserByEmail, generateRecovery } from "@/services/DeprecatedServices/authService";
+import { findAuthUserByEmail, generateRecovery } from "@/services/deprecated/authService";
 import { sendEmail } from "@/utils/sendEmail";
 import { turnstileVertify } from "@/utils/crypt";
 

@@ -1,8 +1,7 @@
-import { db } from "@/utils/db";
 import { Request, Response, NextFunction } from "express";
-import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { Post, Publisher } from "@/utils/schemaManager";
 import { Quark } from  "@thehadron/quark"
+import sql from "@/utils/sql";
 
 const quark = new Quark(2);
 
@@ -21,26 +20,15 @@ export function CreatePost() {
                 const id = quark.generate();
                 const upvote = 0;
 
-                const [result] = await db.query<ResultSetHeader>(
-                    "INSERT INTO posts (id, title, description, upvote, url, publisher_id) VALUES (?, ?, ?, ?, ?, ?)",
-                    [id, title, description, upvote, url, publisher_id]
-                );
+                const result = await sql.insertOne("posts", id, title, description, upvote, url, publisher_id);
 
-                if (result.affectedRows === 0) {
+                if (result.length === 0) {
                     return res.status(400).json({ error: "Failed to create Post." });
                 }
                 
-                await Promise.all(tags.map((tag: string) => {
-                    db.query<ResultSetHeader>(
-                        "INSERT INTO post_tags (post_id, tag) VALUES (?, ?)",
-                        [id, tag]
-                    );
-                }));
+                await Promise.all(tags.map((tag: string) => sql.insertOne("post_tags", id, tag)));
 
-                const [rows] = await db.query<RowDataPacket[]>(
-                    "SELECT * FROM users WHERE id = ? LIMIT 1",
-                    [publisher_id]
-                );
+                const rows = await sql.queryOne("users", ["id"], publisher_id);
 
                 const publisher: Publisher = {
                     id: BigInt(publisher_id),

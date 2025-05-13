@@ -6,8 +6,8 @@ import { MySQLGetAll } from "@/server/decorators/mysql/getAll";
 import { MySQLQuery } from "@/server/decorators/mysql/query";
 import { MySQLUpdate } from "@/server/decorators/mysql/update";
 import { Route } from "@/server/decorators/route";
-import { CreatePost } from "@/services/PostService/createPost";
-import { GetPost } from "@/services/PostService/getPost";
+import { CreatePost } from "@/services/post/createPost";
+import { GetPost } from "@/services/post/getPost";
 import { Request, Response, NextFunction } from "express";
 
 @Controller("/posts")

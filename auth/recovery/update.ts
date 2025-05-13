@@ -1,5 +1,5 @@
 import { AuthUser, recoveryUpdateSchema } from "@/utils/schemaManager";
-import { findAuthUserById, updateAuthUser, verifyRecovery } from "@/services/DeprecatedServices/authService";
+import { findAuthUserById, updateAuthUser, verifyRecovery } from "@/services/deprecated/authService";
 import { hashPassword, turnstileVertify } from "@/utils/crypt";
 
 export async function POST(req: Request) {

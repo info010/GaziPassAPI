@@ -1,5 +1,5 @@
 import { comparePassword, signJwt, turnstileVertify } from "@/utils/crypt";
-import { findAuthUserByEmail } from "@/services/DeprecatedServices/authService"
+import { findAuthUserByEmail } from "@/services/deprecated/authService"
 import { loginSchema } from "@/utils/schemaManager";
 
 export async function POST(req: Request) {
