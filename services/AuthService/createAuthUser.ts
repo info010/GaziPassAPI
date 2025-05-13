@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { db } from "@/utils/db";
-import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { AuthUser } from "@/utils/schemaManager";
 import { Quark } from  "@thehadron/quark"
+import sql from "@/utils/sql";
 
 const quark = new Quark(1)
 
@@ -18,10 +17,7 @@ export function CreateAuthUser() {
           return res.status(400).json({ error: "Missing required fields." });
         }
 
-        const [existingUsers] = await db.query<RowDataPacket[]>(
-          "SELECT id FROM auth_users WHERE email = ? LIMIT 1",
-          [email]
-        );
+        const existingUsers = await sql.queryOne("auth_users", ["email"], email);
 
         if (existingUsers.length > 0) {
           return res.status(409).json({ error: "Email already exists." });
@@ -29,21 +25,15 @@ export function CreateAuthUser() {
 
         const id = quark.generate();
 
-        const [result] = await db.query<ResultSetHeader>(
-          "INSERT INTO auth_users (id, username, email, password) VALUES (?, ?, ?, ?)",
-          [id, username, email, password]
-        );
+        const result = await sql.insertOne("auth_users", id, username, email, password);  
 
-        if (result.affectedRows === 0) {
+        if (result.length === 0) {
           return res.status(400).json({ error: "Failed to create AuthUser." });
         }      
         
-        const [rows] = await db.query<ResultSetHeader>(
-          "INSERT INTO users (id, username, email) VALUES (?, ?, ?)",
-          [id, username, email]
-        );
+        const rows = await sql.insertOne("users", id, username, email);
 
-        if (rows.affectedRows === 0) {
+        if (rows.length === 0) {
           return res.status(400).json({ error: "Failed to create User." });
         }  
 

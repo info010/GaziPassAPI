@@ -1,6 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { db } from "@/utils/db";
-import { ResultSetHeader } from "mysql2";
 
 export function DeleteAuthUser() {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -14,27 +12,23 @@ export function DeleteAuthUser() {
           return res.status(400).json({ error: "Missing ID parameter." });
         }
 
-        //TODO user tablelardan tüm verileri sil, sadece user siliniyor oe
-
-        const [result] = await db.query<ResultSetHeader>(
-          "DELETE FROM users WHERE id = ?",
-          [id]
-        ); 
-
-        if (result.affectedRows === 0) {
+        const result_user = await sql.deleteOne("users", ["id"], id);
+        
+        if (result_user.affectedRows === 0) {
           return res.status(404).json({ error: "User not found" });
         }
+        
+        await sql.deleteOne("user_favorites", ["user_id"], id);
+        await sql.deleteOne("user_following_publishers", ["user_id"], id);
+        await sql.deleteOne("user_following_tags", ["user_id"], id);
 
-        const [result_2] = await db.query<ResultSetHeader>(
-          "DELETE FROM auth_users WHERE id = ?",
-          [id]
-        );
+        const result_auth_user = await sql.deleteOne("auth_users", ["id"], id);
 
-        if (result_2.affectedRows === 0) {
+        if (result_auth_user.affectedRows === 0) {
           return res.status(404).json({ error: "AuthUser not found" });
         }
 
-        req.body = result.affectedRows > 0;
+        req.body = result_user.affectedRows > 0 || result_auth_user.affectedRows > 0;
       } catch (error) {
         console.error("[DeleteAuthUser Error]:", error);
         return res.status(500).json({ error: "Delete failed", detail: error });

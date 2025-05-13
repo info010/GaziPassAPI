@@ -1,6 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { db } from "@/utils/db";
-import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { generateSecretToken } from "@/utils/crypt";
 import { SecretPayload } from "@/utils/schemaManager";
 
@@ -11,30 +9,25 @@ export function GenerateRecovery() {
     descriptor.value = async function (req: Request, res: Response, next: NextFunction) {
       try {
         const email = req.body.email;
+
         if (!email || typeof email !== "string") {
           return res.status(400).json({ error: "Invalid or missing email." });
+        }        
+
+        const rows = await sql.queryOne("secret_payloads", ["email"], email);
+
+        if (rows[0]) {
+          await sql.deleteOne("secret_payloads", ["email"], email);
         }
 
         const token = generateSecretToken();
-
-        const [rows] = await db.query<RowDataPacket[]>(
-          "SELECT * FROM secret_payloads WHERE email = ? LIMIT 1",
-          [email]
-        );
-
-        if (rows[0]) {
-          await db.query<ResultSetHeader>(
-            "DELETE FROM secret_payloads WHERE email = ?",
-            [email]
-          )
-        }
-
         const expire_at = BigInt(Date.now() + 1000 * 60 * 5);
 
-        await db.query<ResultSetHeader>(
-          "INSERT INTO secret_payloads (email, token, expire_at) VALUES (?, ?, ?)",
-          [email, token, expire_at]
-        );
+        const result = await sql.insertOne("secret_payloads", email, token, expire_at);
+
+        if (result.length === 0) {
+          return res.status(500).json({ error: "Failed to create secret payload." });
+        }
 
         const secretPayload: SecretPayload = {
           email,

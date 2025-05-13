@@ -1,6 +1,4 @@
 import e, { Request, Response, NextFunction } from "express";
-import { db } from "@/utils/db";
-import { RowDataPacket } from "mysql2";
 import { AuthUser } from "@/utils/schemaManager";
 
 export function GetAuthUserByEmail() {
@@ -11,10 +9,7 @@ export function GetAuthUserByEmail() {
       try {
         const email = req.params.email;
 
-        const [rows] = await db.query<RowDataPacket[]>(
-          "SELECT * FROM auth_users WHERE email = ? LIMIT 1",
-          [email]
-        );
+        const rows = await sql.queryOne("auth_users", ["email"], email);
 
         if (!rows[0]) {
           return res.status(404).json({ error: "AuthUser not found" });
