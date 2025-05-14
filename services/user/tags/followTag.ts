@@ -1,6 +1,4 @@
-import { db } from "@/utils/db";
 import { Request, Response, NextFunction } from "express";
-import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export function FollowTag() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -14,25 +12,19 @@ export function FollowTag() {
                     return res.status(400).json({ error: "Missing required fields" });
                 }
 
-                const [existingFollowStatus] = await db.query<RowDataPacket[]>(
-                    "SELECT * FROM user_following_tags WHERE user_id = ? AND tag = ?",
-                    [user_id, tag]
-                );
+                const existingFollowingStatus = await sql.queryOne("user_following_tags", ["user_id", "tag"], user_id,tag);
 
-                if (existingFollowStatus.length > 0) {
-                    return res.status(409).json({ error: "User already follow this tag" });
+                if (existingFollowingStatus.length > 0) {
+                    return res.status(409).json({ error: "User already follow this Tag" });
                 }
 
-                const [rows] = await db.query<ResultSetHeader>(
-                    "INSERT INTO user_following_tags (user_id, tag) VALUES (?, ?)",
-                    [user_id, tag]
-                );
+                const rows = await sql.insertOne("user_following_tags", user_id, tag);
 
-                if (rows.affectedRows === 0) {
+                if (rows.length === 0) {
                     return res.status(400).json({ error: "Failed to follow tag." });
                 }
-
-                req.body = rows.affectedRows > 0;
+                
+                req.body = rows.length > 0;
             } catch (error) {
                 console.error("[FollowTag Error]:", error);
                 return res.status(500).json({ error: "Internal server error", detail: error });

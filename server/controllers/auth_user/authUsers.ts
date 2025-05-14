@@ -5,11 +5,11 @@ import { Request, Response, NextFunction } from "express";
 import { MySQLGetAll } from "@/server/decorators/mysql/getAll";
 import { MySQLQuery } from "@/server/decorators/mysql/query";
 
-import { CreateAuthUser } from "@/services/AuthService/createAuthUser";
-import { DeleteAuthUser } from "@/services/AuthService/deleteAuthUser";
-import { GetAuthUserByEmail } from "@/services/AuthService/getAuthUserByEmail";
-import { GetAuthUserByID } from "@/services/AuthService/getAuthUserById";
-import { UpdateAuthUser } from "@/services/AuthService/updateAuthUser";
+import { CreateAuthUser } from "@/services/auth/createAuthUser";
+import { DeleteAuthUser } from "@/services/auth/deleteAuthUser";
+import { GetAuthUserByEmail } from "@/services/auth/getAuthUserByEmail";
+import { GetAuthUserByID } from "@/services/auth/getAuthUserById";
+import { UpdateAuthUser } from "@/services/auth/updateAuthUser";
 
 @Controller("/auth-users")
 class AuthUsersController {

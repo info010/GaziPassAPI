@@ -3,8 +3,8 @@ import { Controller } from "@/server/decorators/controller";
 import { MySQLDelete } from "@/server/decorators/mysql/delete";
 import { MySQLQuery } from "@/server/decorators/mysql/query";
 import { Route } from "@/server/decorators/route";
-import { VerifyRecovery } from "@/services/AuthService/secretpayload/vertifyRecovery";
-import { GenerateRecovery } from "@/services/AuthService/secretpayload/generateRecovery";
+import { VerifyRecovery } from "@/services/auth/secretpayload/vertifyRecovery";
+import { GenerateRecovery } from "@/services/auth/secretpayload/generateRecovery";
 
 @Controller("/secret-payloads")
 class SecretPayloadController {

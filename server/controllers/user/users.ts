@@ -2,15 +2,15 @@ import { Request, Response, NextFunction } from "express";
 import { Controller } from "@/server/decorators/controller";
 import { Route } from "@/server/decorators/route";
 import { MySQLGetAll } from "@/server/decorators/mysql/getAll";
-import { MySQLUpdate } from "@/server/decorators/mysql/update";
 import { MySQLQuery } from "@/server/decorators/mysql/query";
-import { GetUser } from "@/services/UserService/getUser";
-import { FollowTag } from "@/services/UserService/TagService/followTag";
-import { UnfollowTag } from "@/services/UserService/TagService/unfollowTag";
-import { FollowPublisher } from "@/services/UserService/PublisherService/followPublisher";
-import { UnfollowPublisher } from "@/services/UserService/PublisherService/unfollowPublisher";
-import { AddFavorite } from "@/services/UserService/FavoritePostService/addFavoritePost";
-import { RemoveFavorite } from "@/services/UserService/FavoritePostService/removeFavoritePost";
+import { GetUser } from "@/services/user/getUser";
+import { FollowTag } from "@/services/user/tags/followTag";
+import { UnfollowTag } from "@/services/user/tags/unfollowTag";
+import { FollowPublisher } from "@/services/user/publishers/followPublisher";
+import { UnfollowPublisher } from "@/services/user/publishers/unfollowPublisher";
+import { AddFavorite } from "@/services/user/favoriteposts/addFavoritePost";
+import { RemoveFavorite } from "@/services/user/favoriteposts/removeFavoritePost";
+import { UpdateUser } from "@/services/user/updateUser";
 
 @Controller("/users")
 class UserController {
@@ -82,9 +82,9 @@ class UserController {
   }
 
   @Route("put", "/update/:id")
-  @MySQLUpdate("users")
+  @UpdateUser()
   update(req: Request, res: Response, next: NextFunction) {
-    return res.status(200).json(req.mysqlGetAll);
+    return res.status(200).json(req.user);
   }
 
   @Route("post", "/search")

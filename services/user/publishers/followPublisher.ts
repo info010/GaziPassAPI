@@ -1,6 +1,4 @@
-import { db } from "@/utils/db";
 import { Request, Response, NextFunction } from "express";
-import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export function FollowPublisher() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -14,25 +12,19 @@ export function FollowPublisher() {
                     return res.status(400).json({ error: "Missing required fields" });
                 }
 
-                const [existingFollowStatus] = await db.query<RowDataPacket[]>(
-                    "SELECT * FROM user_following_publishers WHERE user_id = ? AND publisher_id = ?",
-                    [user_id, publisher_id]
-                );
+                const existingFollowingStatus = await sql.queryOne("user_following_publishers", ["user_id", "publisher_id"], user_id, publisher_id);
 
-                if (existingFollowStatus.length > 0) {
+                if (existingFollowingStatus.length > 0) {
                     return res.status(409).json({ error: "User already follow this Publisher" });
                 }
 
-                const [rows] = await db.query<ResultSetHeader>(
-                    "INSERT INTO user_following_publishers (user_id, publisher_id) VALUES (?, ?)",
-                    [user_id, publisher_id]
-                );
+                const rows = await sql.insertOne("user_following_publishers", user_id, publisher_id);
 
-                if (rows.affectedRows === 0) {
+                if (rows.length === 0) {
                     return res.status(400).json({ error: "Failed to follow publisher." });
                 }
-
-                req.body = rows.affectedRows > 0;
+                
+                req.body = rows.length > 0;
             } catch (error) {
                 console.error("[FollowPublisher Error]:", error);
                 return res.status(500).json({ error: "Internal server error", detail: error });
