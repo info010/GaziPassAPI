@@ -25,7 +25,7 @@ export function UpdateUser() {
           return res.status(400).json({ error: "Missing required fields." });
         }
 
-        const result = await sql.updateOne(
+        const result_user = await sql.updateOne(
           "users",
           ["username", "email", "role"],
           [{ id: id }],
@@ -34,8 +34,20 @@ export function UpdateUser() {
           role
         );
 
-        if (result.affectedRows === 0) {
+        if (result_user.affectedRows === 0) {
           return res.status(404).json({ error: "User not found" });
+        }
+
+        const result_authUser = await sql.updateOne(
+          "auth_users",
+          ["username", "email"],
+          [{ id: id }],
+          username,
+          email
+        );
+
+        if (result_authUser.affectedRows === 0) {
+          return res.status(404).json({ error: "AuthUser not found" });
         }
 
         //User's-Favorites

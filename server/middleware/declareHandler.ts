@@ -1,4 +1,4 @@
-import { AuthUser, Publisher, Post, User, SecretPayload } from "@/utils/schemaManager";
+import { AuthUser, Publisher, Post, User, SecretPayload, Login } from "@/utils/schemaManager";
 import { Request, Response, NextFunction } from "express";
 import type { RowDataPacket } from "mysql2";
 
@@ -14,7 +14,8 @@ declare global {
       user?: User | undefined;
       publisher?: Publisher | undefined;
       secretPayload?: SecretPayload | undefined;
-      post?: Post | undefined;      
+      post?: Post | undefined;
+      login?: Login | undefined;      
     }
   }
 }
@@ -28,6 +29,9 @@ export function declareHandler(req: Request, res: Response, next: NextFunction) 
     req.authUser = undefined;
     req.publisher = undefined;
     req.secretPayload = undefined;
+    req.post = undefined;
+    req.user = undefined;
+    req.login = undefined;
 
     next()    
 }

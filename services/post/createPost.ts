@@ -18,9 +18,8 @@ export function CreatePost() {
                 }
 
                 const id = quark.generate();
-                const upvote = 0;
 
-                const result = await sql.insertOne("posts", id, title, description, upvote, url, publisher_id);
+                const result = await sql.insertOneWithColumns("posts", ["id", "title", "description", "url", "publisher_id"], id, title, description, url, publisher_id);
 
                 if (result.length === 0) {
                     return res.status(400).json({ error: "Failed to create Post." });
@@ -41,7 +40,7 @@ export function CreatePost() {
                     id,
                     title,
                     description,
-                    upvote,
+                    upvote: 0,
                     url,
                     tags,
                     publisher,

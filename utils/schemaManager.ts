@@ -3,7 +3,6 @@ import { lepton  } from "@thehadron/lepton";
 export const loginSchema = lepton.object({
     email: lepton.string(),
     password: lepton.string(),
-    turnstileToken: lepton.string()
 }).strict();
 
 export const signUpSchema = lepton.object({
@@ -59,6 +58,8 @@ export const UserSchema = PublisherSchema.extend({
     following_tags: lepton.array(lepton.string()),
     following_publishers: lepton.array(PublisherSchema),
 }).strict();
+
+export type Login = lepton.infer<typeof loginSchema>
 
 export type SecretPayload = lepton.infer<typeof SecretPayloadSchema>
 

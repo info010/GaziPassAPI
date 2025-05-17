@@ -1,8 +1,8 @@
-import { hash, compare } from "bcryptjs"
+import bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
 
-const SECRET = process.env.JWT_AUTH_SECRET!;
+const SECRET = process.env.RECOVERY_SECRET!;
 
 export const signJwt = (payload: object) =>
   jwt.sign(payload, SECRET, { expiresIn: "1h" });
@@ -10,8 +10,8 @@ export const signJwt = (payload: object) =>
 export const verifyJwt = (token: string) =>
   jwt.verify(token, SECRET);
 
-export const hashPassword = (pwd: string) => hash(pwd, 32);
-export const comparePassword = (pwd: string, hash: string) => compare(pwd, hash);
+export const hashPassword = (pwd: string) => bcrypt.hashSync(pwd, 10);
+export const comparePassword = (pwd: string, hash: string) =>  bcrypt.compareSync(pwd, hash);
 
 export const generateSecretToken = () => {
     return randomBytes(64).toString('hex')

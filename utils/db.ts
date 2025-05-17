@@ -112,10 +112,10 @@ CREATE TABLE IF NOT EXISTS auth_users (
 
 const tables = [
   authUserTable,
+  userTable,
   secretPayloadTable,
   postTable,
   postTagsTable,
-  userTable,
   userFavoritesTable,
   userFollowingTagsTable,
   userFollowingPublishersTable,

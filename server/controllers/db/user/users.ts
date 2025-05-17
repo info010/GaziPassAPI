@@ -11,6 +11,7 @@ import { UnfollowPublisher } from "@/services/user/publishers/unfollowPublisher"
 import { AddFavorite } from "@/services/user/favoriteposts/addFavoritePost";
 import { RemoveFavorite } from "@/services/user/favoriteposts/removeFavoritePost";
 import { UpdateUser } from "@/services/user/updateUser";
+import { authenticateToken } from "@/server/middleware/authenticateToken";
 
 @Controller("/users")
 class UserController {

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AuthUser } from "@/utils/schemaManager";
 import { Quark } from  "@thehadron/quark"
 import sql from "@/utils/sql";
+import { hashPassword } from "@/utils/crypt";
 
 const quark = new Quark(1)
 
@@ -24,14 +25,17 @@ export function CreateAuthUser() {
         }
 
         const id = quark.generate();
+        console.log("Generated ID:", id);
+        const hashedPassword = hashPassword(password); 
+        console.log("Hashed Password:", hashedPassword);
 
-        const result = await sql.insertOne("auth_users", id, username, email, password);  
+        const result = await sql.insertOne("auth_users", id, username, email, hashedPassword);  
 
         if (result.length === 0) {
           return res.status(400).json({ error: "Failed to create AuthUser." });
         }      
         
-        const rows = await sql.insertOne("users", id, username, email);
+        const rows = await sql.insertOneWithColumns("users", ["id", "username", "email"], id, username, email);
 
         if (rows.length === 0) {
           return res.status(400).json({ error: "Failed to create User." });
@@ -41,7 +45,7 @@ export function CreateAuthUser() {
           id,
           username,
           email,
-          password,
+          password: hashedPassword,
         };
 
         req.authUser = authUser;

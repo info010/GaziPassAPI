@@ -16,9 +16,13 @@ import {
   SecretPayloadController,
   TestController,
   UserController,
+  LoginController,
+  RefreshController,
+  LogoutController
 } from "@/server/controllers/exports";
 import { jsonHandler } from "./middleware/jsonHandler";
 // import { functionHandler } from "./middleware/functionHandler";
+import cookieParser from "cookie-parser";
 
 export const application = express();
 export let httpServer: ReturnType<typeof http.createServer>;
@@ -38,6 +42,7 @@ export const Main = async () => {
   application.use(declareHandler);
   application.use(loggingHandler);
   application.use(corsHandler as RequestHandler);
+  application.use(cookieParser());
 
   logging.log("Define Controller Routing");
   defineRoutes(
@@ -47,6 +52,9 @@ export const Main = async () => {
       UserController,
       SecretPayloadController,
       PostController,
+      LoginController,
+      RefreshController,
+      LogoutController
     ],
     application
   );
