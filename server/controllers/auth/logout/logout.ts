@@ -10,7 +10,7 @@ const REFRESH = process.env.REFRESH_TOKEN_SECRET!;
 class LogoutController {
 
     @Route("get", "/")
-    async login(req: Request, res: Response, next: NextFunction) {
+    async logout(req: Request, res: Response, next: NextFunction) {
         const cookies = req.cookies;
         if (!cookies?.jwt) {
             return res.sendStatus(401);

@@ -18,7 +18,8 @@ import {
   UserController,
   LoginController,
   RefreshController,
-  LogoutController
+  LogoutController,
+  RegisterController
 } from "@/server/controllers/exports";
 import { jsonHandler } from "./middleware/jsonHandler";
 // import { functionHandler } from "./middleware/functionHandler";
@@ -54,7 +55,8 @@ export const Main = async () => {
       PostController,
       LoginController,
       RefreshController,
-      LogoutController
+      LogoutController,
+      RegisterController
     ],
     application
   );

@@ -6,6 +6,7 @@ import TestController from "@/server/controllers/test";
 import LoginController from "@/server/controllers/auth/login/login";
 import RefreshController from "@/server/controllers/auth/refresh/refresh";
 import LogoutController from "@/server/controllers/auth/logout/logout";
+import RegisterController from "./auth/register/register";
 
 // Exporting all controllers
 export {
@@ -17,4 +18,5 @@ export {
   LoginController,
   RefreshController,
   LogoutController,
+  RegisterController
 };
