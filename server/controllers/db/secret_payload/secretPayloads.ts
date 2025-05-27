@@ -26,12 +26,6 @@ class SecretPayloadController {
   delete(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json({ message: "Secret payload deleted" });
   }
-
-  @Route("post", "/search")
-  @MySQLQuery("secret_payloads")
-  query(req: Request, res: Response, next: NextFunction) {
-    return res.status(200).json(req.mysqlQuery);
-  }
 }
 
 export default SecretPayloadController;

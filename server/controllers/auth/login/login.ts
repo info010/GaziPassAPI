@@ -3,7 +3,7 @@ import { Controller } from '@/server/decorators/controller';
 import { Route } from '@/server/decorators/route';
 import jwt from 'jsonwebtoken';
 import sql from "@/utils/sql";
-import { comparePassword, hashPassword } from '@/utils/crypt';
+import { comparePassword } from '@/utils/crypt';
 
 const ACCESS = process.env.ACCESS_TOKEN_SECRET!;
 const REFRESH = process.env.REFRESH_TOKEN_SECRET!;

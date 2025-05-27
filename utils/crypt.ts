@@ -10,7 +10,7 @@ export const signJwt = (payload: object) =>
 export const verifyJwt = (token: string) =>
   jwt.verify(token, SECRET);
 
-export const hashPassword = (pwd: string) => bcrypt.hashSync(pwd, 10);
+export const hashPassword = (pwd: string) => bcrypt.hashSync(pwd, 16);
 export const comparePassword = (pwd: string, hash: string) =>  bcrypt.compareSync(pwd, hash);
 
 export const generateSecretToken = () => {

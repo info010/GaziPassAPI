@@ -50,11 +50,11 @@ class AuthUsersController {
     return res.status(200).json({ message: "Auth user deleted" });
   }
 
-  @Route("post", "/search")
+/*   @Route("post", "/search")
   @MySQLQuery("auth_users")
   query(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json(req.mysqlQuery);
-  }
+  } */
 }
 
 export default AuthUsersController;

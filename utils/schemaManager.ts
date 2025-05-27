@@ -1,30 +1,5 @@
 import { lepton  } from "@thehadron/lepton";
 
-export const loginSchema = lepton.object({
-    email: lepton.string(),
-    password: lepton.string(),
-}).strict();
-
-export const signUpSchema = lepton.object({
-    username: lepton.string(),
-    email: lepton.string(),
-    password: lepton.string(),
-    repassword: lepton.string(),
-    turnstileToken: lepton.string()
-}).strict();
-
-export const recoveryPasswordSchema = lepton.object({
-    email: lepton.string(),
-    turnstileToken: lepton.string()
-}).strict();
-
-export const recoveryUpdateSchema = lepton.object({
-    password: lepton.string(),
-    repassword: lepton.string(),
-    url: lepton.string(),
-    turnstileToken: lepton.string()
-}).strict();
-
 export const AuthUserSchema = lepton.object({
     id: lepton.bigint(),
     username: lepton.string(),
@@ -58,8 +33,6 @@ export const UserSchema = PublisherSchema.extend({
     following_tags: lepton.array(lepton.string()),
     following_publishers: lepton.array(PublisherSchema),
 }).strict();
-
-export type Login = lepton.infer<typeof loginSchema>
 
 export type SecretPayload = lepton.infer<typeof SecretPayloadSchema>
 

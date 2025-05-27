@@ -28,13 +28,13 @@ class UserController {
     return res.status(200).json(req.user);
   }
 
-  @Route("post", "/follow-tag")
+  @Route("post", "/follow-tag", authenticateToken)
   @FollowTag()
   followTag(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json({ message: "Tag's followed" });
   }
 
-  @Route("delete", "/unfollow-tag/:user_id/tag/:tag")
+  @Route("delete", "/unfollow-tag/:user_id/tag/:tag", authenticateToken)
   @UnfollowTag()
   unfollowTag(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json({ message: "Tag's unfollowed" });
@@ -46,13 +46,13 @@ class UserController {
     return res.status(200).json(req.user?.following_tags);
   }
 
-  @Route("post", "/follow-publisher")
+  @Route("post", "/follow-publisher", authenticateToken)
   @FollowPublisher()
   followPublisher(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json({ message: "Publisher's followed" });
   }
 
-  @Route("delete", "/unfollow-publisher/:user_id/publisher/:publisher_id")
+  @Route("delete", "/unfollow-publisher/:user_id/publisher/:publisher_id", authenticateToken)
   @UnfollowPublisher()
   unfollowPublisher(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json({ message: "Publisher's unfollowed" });
@@ -64,13 +64,13 @@ class UserController {
     return res.status(200).json(req.user?.following_publishers);
   }
 
-  @Route("post", "/add-favorite")
+  @Route("post", "/add-favorite", authenticateToken)
   @AddFavorite()
   addFavorite(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json({ message: "Post's added favorites" });
   }
 
-  @Route("delete", "/remove-favorite/:user_id/post/:post_id")
+  @Route("delete", "/remove-favorite/:user_id/post/:post_id", authenticateToken)
   @RemoveFavorite()
   removeFavorite(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json({ message: "Post's removed favorites" });
@@ -82,17 +82,17 @@ class UserController {
     return res.status(200).json(req.user?.favorites);
   }
 
-  @Route("put", "/update/:id")
+  @Route("put", "/update/:id", authenticateToken)
   @UpdateUser()
   update(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json(req.user);
   }
 
-  @Route("post", "/search")
+/*   @Route("post", "/search")
   @MySQLQuery("users")
   query(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json(req.mysqlGetAll);
-  }
+  } */
 }
 
 export default UserController;
