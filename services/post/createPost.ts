@@ -11,7 +11,12 @@ export function CreatePost() {
 
         descriptor.value = async function (req: Request, res: Response, next: NextFunction) {
             try {
-                const { title, description, url, publisher_id, tags} = req.body;
+                const { title, description, url, tags} = req.body;
+
+                if (!req.publisher) {
+                    return res.status(401).json({ error: "Unauthorized" });
+                }
+                const publisher_id = req.publisher.id;
 
                 if (!title || !description || !url || !publisher_id || !tags) {
                     return res.status(400).json({ error: "Missing required fields." });
@@ -29,12 +34,7 @@ export function CreatePost() {
 
                 const rows = await sql.queryOne("users", ["id"], publisher_id);
 
-                const publisher: Publisher = {
-                    id: BigInt(publisher_id),
-                    username: rows[0].username,
-                    email: rows[0].email,
-                    role: rows[0].role,
-                } 
+                const publisher: Publisher = req.publisher; 
                 
                 const post: Post = {
                     id,

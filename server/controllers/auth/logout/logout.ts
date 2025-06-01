@@ -21,7 +21,7 @@ class LogoutController {
             if (err) {
                 return res.sendStatus(403);
             }
-            const rows = await sql.queryOneWithColumns("auth_users", ["username", "email"], ["username", "email"],decoded.username ,decoded.email);
+            const rows = await sql.queryOneWithColumns("users", ["id" ,"username", "email",], decoded.id, decoded.username ,decoded.email);
             if (rows.length === 0) {
                 return res.sendStatus(403);
             }

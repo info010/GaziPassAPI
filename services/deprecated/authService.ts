@@ -106,15 +106,6 @@ export const generateRecovery = async (email: string) => {
     "INSERT INTO secret_payloads (email, token, expire_at, create_at) VALUES (?, ?, ?, ?)",
     [email, token, expires_at, creates_at]
   );
-
-  const payload: SecretPayload = {
-    email,
-    expires_at,
-    token,
-    creates_at
-  }
-
-  return payload;
 };
 
 export const verifyRecovery = async (

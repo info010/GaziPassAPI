@@ -1,4 +1,4 @@
-import { lepton } from '@thehadron/lepton';
+import { PublisherSchema } from '@/utils/schemaManager';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
@@ -10,12 +10,15 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!, (err: any, data: any) => {
         if (err) return res.sendStatus(403);
-        const validate = lepton.object({
-            username: lepton.string(),
-            email: lepton.string()
-        }).strict();
-        const user = validate.parse(data);
-        req.body = user;
+        const user = {
+            id: BigInt(data.id),
+            username: data.username,
+            email: data.email,
+            role: data.role,
+        };
+        const publisher = PublisherSchema.parse(user);
+        console.log("Authenticated user:", publisher);
+        req.publisher = publisher;
         next();
     });
 }

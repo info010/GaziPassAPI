@@ -17,7 +17,7 @@ class PostController {
     return res.status(200).json(req.mysqlGetAll);
   }
 
-  @Route("get", "/get/:id")
+  @Route("get", "/:id")
   @GetPost()
   get(req: Request, res: Response, next: NextFunction) {
     return res.status(200).json(req.post);

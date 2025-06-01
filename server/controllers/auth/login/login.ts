@@ -4,6 +4,7 @@ import { Route } from '@/server/decorators/route';
 import jwt from 'jsonwebtoken';
 import sql from "@/utils/sql";
 import { comparePassword } from '@/utils/crypt';
+import { PublisherSchema } from '@/utils/schemaManager';
 
 const ACCESS = process.env.ACCESS_TOKEN_SECRET!;
 const REFRESH = process.env.REFRESH_TOKEN_SECRET!;
@@ -18,18 +19,25 @@ class LoginController {
             return res.status(400).json({ message: 'Email and password are required' });
         }
 
-        const rows = await sql.queryOneWithColumns("auth_users", ["username", "email", "password"], ["email"] , email);
-        if (rows.length === 0) {
+        const row = await sql.queryOneWithColumns("auth_users", ["password"],["email"] , email);
+        if (row.length === 0) {
             return res.status(401).json({ message: 'Invalid email' });
         }
 
-        const match = comparePassword(password, rows[0].password);
+        const match = comparePassword(password, row[0].password);
 
         if (!match) {
             return res.status(401).json({ message: 'Invalid password' });
         }
 
-        const user = { username: rows[0].username, email: rows[0].email };
+        const rows = await sql.queryOne("users", ["email"] , email);
+
+        const user ={
+            id: rows[0].id,
+            username: rows[0].username,
+            email: rows[0].email,
+            role: rows[0].role,
+        };
 
         const accesToken = jwt.sign(user, ACCESS, { expiresIn: '30s' });
         const refreshToken = jwt.sign(user, REFRESH, { expiresIn: '1d' });
