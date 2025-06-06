@@ -17,12 +17,12 @@ export function UpdateAuthUser() {
 
         const rows = await sql.queryOneWithColumns("auth_users", ["password"], ["id"], id);
 
-        const match = await comparePassword(oldPassword, rows[0].password);
+        const match = comparePassword(oldPassword, rows[0].password);
         if (!match) {
           return res.status(401).json({ error: "Invalid password" });
         }
 
-        const hashedPassword = await hashPassword(newPassword);
+        const hashedPassword = hashPassword(newPassword);
 
         const result = await sql.updateOne("auth_users", ["password"], [{id: id}], hashedPassword);
 

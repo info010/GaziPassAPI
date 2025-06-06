@@ -1,41 +1,40 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from "./db";
  
-async function insertOne(table: string, ...values: any[]) {
-
+export async function insertOne(table: string, ...values: any[]): Promise<RowDataPacket[]> {
   const sqlQuery = `INSERT INTO ${table}  VALUES (${values.map(() => "?").join(", ")})`;
   const [result] = await db.query<RowDataPacket[]>(sqlQuery, values);
-  return result as RowDataPacket[];    
+  return result;    
 }
 
-async function insertOneWithColumns(table: string, columns: string[], ...values: any[]) {
+export async function insertOneWithColumns(table: string, columns: string[], ...values: any[]): Promise<RowDataPacket[]> {
   const sqlQuery = `INSERT INTO ${table} (${columns.map((column) => `${column}`).join(", ")}) VALUES (${values.map(() => "?").join(", ")})`;
   const [result] = await db.query<RowDataPacket[]>(sqlQuery, values);
-  return result as RowDataPacket[];    
+  return result;    
 } 
 
-async function queryOne(table: string, filters: string[], ...values: any[]) {
+export async function queryOne(table: string, filters: string[], ...values: any[]): Promise<RowDataPacket[]> {
   const whereClause = "WHERE " + filters.map((value) => `${value} = ?`).join(" AND ");
   const sqlQuery = `SELECT * FROM ${table} ${whereClause}`;
   const [rows] = await db.query<RowDataPacket[]>(sqlQuery, values);
-  return rows as RowDataPacket[];        
+  return rows;        
 }
 
-async function queryOneWithColumns(table: string, columns: string[], filters: string[], ...values: any[]) {
+export async function queryOneWithColumns(table: string, columns: string[], filters: string[], ...values: any[]): Promise<RowDataPacket[]> {
   const whereClause = "WHERE " + filters.map((value) => `${value} = ?`).join(" AND ");
   const sqlQuery = `SELECT ${columns.map((column) => `${column}`).join(", ")} FROM ${table} ${whereClause}`;
   const [rows] = await db.query<RowDataPacket[]>(sqlQuery, values);
-  return rows as RowDataPacket[];        
+  return rows;        
 }
 
-async function deleteOne(table: string, filters: string[], ...values: any[]) {
+export async function deleteOne(table: string, filters: string[], ...values: any[]): Promise<ResultSetHeader> {
   const whereClause = "WHERE " + filters.map((value) => `${value} = ?`).join(" AND ");
   const sqlQuery = `DELETE FROM ${table} ${whereClause}`;
   const [result] = await db.query<ResultSetHeader>(sqlQuery, values);
-  return result as ResultSetHeader;    
+  return result;    
 }
 
-async function updateOne(table: string, fields: string[], filters: Record<string, any>[], ...values: any[]) {
+export async function updateOne(table: string, fields: string[], filters: Record<string, any>[], ...values: any[]) {
   const setClause = "SET " + fields.map((value) => `${value} = ?`).join(", ");
   const whereClause = "WHERE " + filters.map((value) => `${Object.keys(value)[0]} = ?`).join(" AND ");
   const whereValues = filters.map((value) => Object.values(value)[0]);
@@ -45,10 +44,10 @@ async function updateOne(table: string, fields: string[], filters: Record<string
   return result;
 }
 
-async function getAllWithColunms(table: string, columns: string[]) {
+export async function getAllWithColunms(table: string, columns: string[]): Promise<RowDataPacket[]> {
   const sqlQuery = `SELECT ${columns.map((column) => `${column}`).join(", ")} FROM ${table}`;
   const [rows] = await db.query<RowDataPacket[]>(sqlQuery);
-  return rows as RowDataPacket[];        
+  return rows;;        
 }
 
 /* export async function deleteFromManyTables(
@@ -63,29 +62,3 @@ async function getAllWithColunms(table: string, columns: string[]) {
     await db.query<ResultSetHeader>(sqlQuery, values);
   }
 } */
-
-const sql = {
-  insertOne,
-  insertOneWithColumns,
-  queryOne,
-  queryOneWithColumns,
-  deleteOne,
-  updateOne,
-  getAllWithColunms,
-};
-
-declare global {
-  var sql: {
-    insertOne: (table: string, ...values: any[]) => Promise<RowDataPacket[]>;
-    insertOneWithColumns: (table: string, columns: string[], ...values: any[]) => Promise<RowDataPacket[]>;
-    queryOne: (table: string, filters: string[], ...values: any[]) => Promise<RowDataPacket[]>;
-    queryOneWithColumns: (table: string, columns: string[], filters: string[], ...values: any[]) => Promise<RowDataPacket[]>;
-    deleteOne: (table: string, filters: string[], ...values: any[]) => Promise<ResultSetHeader>;
-    updateOne: (table: string, fields: string[], filters: Record<string, any>[], ...values: any[]) => Promise<ResultSetHeader>;
-    getAllWithColunms: (table: string, columns: string[]) => Promise<RowDataPacket[]>;
-  };
-}
-
-globalThis.sql = sql;
-
-export default sql;

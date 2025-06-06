@@ -11,15 +11,7 @@ import { defineRoutes } from "@/server/modules/routes";
 import { checkConnection, createTables } from "@/utils/db";
 import { declareHandler } from "./middleware/declareHandler";
 import {
-  AuthUsersController,
-  PostController,
-  SecretPayloadController,
-  TestController,
-  UserController,
-  LoginController,
-  RefreshController,
-  LogoutController,
-  RegisterController
+  AuthController
 } from "@/server/controllers/exports";
 import { jsonHandler } from "./middleware/jsonHandler";
 // import { functionHandler } from "./middleware/functionHandler";
@@ -48,15 +40,7 @@ export const Main = async () => {
   logging.log("Define Controller Routing");
   defineRoutes(
     [
-      TestController,
-      AuthUsersController,
-      UserController,
-      SecretPayloadController,
-      PostController,
-      LoginController,
-      RefreshController,
-      LogoutController,
-      RegisterController
+      AuthController,
     ],
     application
   );

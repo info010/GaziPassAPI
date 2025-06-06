@@ -2,6 +2,7 @@ import { db } from "@/utils/db";
 import { Request, Response, NextFunction } from "express";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { Post, Publisher, User } from "@/utils/schemaManager";
+import { queryOne } from "@/utils/sql";
 
 export function GetUser() {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -12,7 +13,7 @@ export function GetUser() {
                 const id = req.params.id;
 
                 //User
-                const rows_user = await sql.queryOne("users", ["id"], id);
+                const rows_user = await queryOne("users", ["id"], id);
 
                 if (!rows_user[0]) {
                     return res.status(404).json({ error: "User not found" });
@@ -26,7 +27,7 @@ export function GetUser() {
 
                 const favorites: Post[] = await Promise.all(rows_favorite.map(async (row) => {
                     
-                    const rows_publisher = await sql.queryOne("users", ["id"], row.publisher_id);
+                    const rows_publisher = await queryOne("users", ["id"], row.publisher_id);
 
                     const publisher: Publisher = {
                         id: rows_publisher[0].id,
@@ -35,7 +36,7 @@ export function GetUser() {
                         role: rows_publisher[0].role,
                     }
 
-                    const rows_tags = await sql.queryOne("post_tags", ["post_id"], row.id);
+                    const rows_tags = await queryOne("post_tags", ["post_id"], row.id);
 
                     const tags = rows_tags.map((row) => row.tag);
         
@@ -53,11 +54,11 @@ export function GetUser() {
                 })) 
                 
                 //User-Posts
-                const rows_posts = await sql.queryOne("posts", ["publisher_id"], id);
+                const rows_posts = await queryOne("posts", ["publisher_id"], id);
 
                 const posts: Post[] = await Promise.all(rows_posts.map(async (row) => {
 
-                    const rows_tags = await sql.queryOne("post_tags", ["post_id"], row.id);
+                    const rows_tags = await queryOne("post_tags", ["post_id"], row.id);
 
                     const tags: string[] = rows_tags.map((e) => e.tag);
                     
@@ -94,7 +95,7 @@ export function GetUser() {
 
                 //User's-Following-Tags
 
-                const rows_following_tags = await sql.queryOne("user_following_tags", ["user_id"], id);
+                const rows_following_tags = await queryOne("user_following_tags", ["user_id"], id);
 
                 const following_tags: string[] = rows_following_tags.map((row) => row.tag);
                 
