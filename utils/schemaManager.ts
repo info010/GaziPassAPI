@@ -1,5 +1,7 @@
 import { lepton  } from "@thehadron/lepton";
 
+
+
 export const AuthUserSchema = lepton.object({
     id: lepton.bigint(),
     username: lepton.string(),
@@ -34,12 +36,18 @@ export const UserSchema = PublisherSchema.extend({
     following_publishers: lepton.array(PublisherSchema),
 }).strict();
 
-export type SecretPayload = lepton.infer<typeof SecretPayloadSchema>
+export const CurrentUserSchema = PublisherSchema.extend({
+    ip: lepton.string().optional(),
+}).strict();
 
-export type AuthUser = lepton.infer<typeof AuthUserSchema>
+export type SecretPayload = lepton.infer<typeof SecretPayloadSchema>;
 
-export type Publisher = lepton.infer<typeof PublisherSchema>
+export type AuthUser = lepton.infer<typeof AuthUserSchema>;
 
-export type Post = lepton.infer<typeof PostSchema>
+export type Publisher = lepton.infer<typeof PublisherSchema>;
+
+export type Post = lepton.infer<typeof PostSchema>;
  
-export type User = lepton.infer<typeof UserSchema>
+export type User = lepton.infer<typeof UserSchema>;
+
+export type CurrentUser = lepton.infer<typeof CurrentUserSchema>;

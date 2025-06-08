@@ -45,6 +45,15 @@ CREATE TABLE IF NOT EXISTS secret_payloads (
 );
 `;
 
+const upvoteTable = `
+CREATE TABLE IF NOT EXISTS upvote (
+  user_id BIGINT,
+  post_id BIGINT,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (post_id) REFERENCES posts(id)
+)
+`
+
 const postTable = `
 CREATE TABLE IF NOT EXISTS posts (
   id BIGINT PRIMARY KEY,
@@ -119,6 +128,7 @@ const tables = [
   userFavoritesTable,
   userFollowingTagsTable,
   userFollowingPublishersTable,
+  upvoteTable
 ];
 
 export async function createTables() {

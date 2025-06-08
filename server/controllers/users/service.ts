@@ -3,10 +3,6 @@ import { Post, Publisher, User } from "@/utils/schemaManager";
 import { db } from "@/utils/db";
 import { RowDataPacket } from "mysql2";
 import { deleteOne, insertOne, queryOne, updateOne } from "@/utils/sql";
-import jwt from "jsonwebtoken";
-
-const ACCESS: string = process.env.ACCESS_TOKEN_SECRET!;
-const REFRESH: string = process.env.REFRESH_TOKEN_SECRET!;
 
 export async function getUserById(id: bigint, req: Request, res: Response) {
   try {
@@ -134,21 +130,11 @@ export async function getUserById(id: bigint, req: Request, res: Response) {
 }
 
 export async function getCurrentUser(req: Request, res: Response) {
-  const cookies = req.cookies;
-  if (!cookies?.jwt) {
-    return res.status(401).json({ error: "Unauthorized" });
+  const userId = req.currentUser?.id;
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
   }
-
-  const verifyToken = cookies.jwt;
-
-  jwt.verify(verifyToken, REFRESH, async (err: any, decoded: any) => {
-    if (err) {
-      return res.status(403).json({ error: "Forbidden" });
-    }
-
-    const userId = BigInt(decoded.id);
-    await getUserById(userId, req, res);
-  });
+  await getUserById(userId, req, res);
 }
 
 export async function updateUser(id: bigint, req: Request, res: Response) {
@@ -193,48 +179,35 @@ export async function updateUser(id: bigint, req: Request, res: Response) {
 
 export async function addFavorite(postId: bigint, req: Request, res: Response) {
   try {
-    const cookies = req.cookies;
-    if (!cookies?.jwt) {
-      return res.status(401).json({ error: "Unauthorized" });
+    const userId = req.currentUser?.id;
+    if (!userId || !postId) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const verifyToken = cookies.jwt;
+    const existingFavoriteStatus = await queryOne(
+      "user_favorites",
+      ["user_id", "post_id"],
+      userId,
+      postId
+    );
 
-    jwt.verify(verifyToken, REFRESH, async (err: any, decoded: any) => {
-      if (err) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
+    if (existingFavoriteStatus.length > 0) {
+      return res
+        .status(409)
+        .json({ error: "User already added favorite this Post" });
+    }
 
-      const userId = BigInt(decoded.id);
-      if (!userId || !postId) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
+    const rows = await insertOne("user_favorites", userId, postId);
 
-      const existingFavoriteStatus = await queryOne(
-        "user_favorites",
-        ["user_id", "post_id"],
-        userId,
-        postId
-      );
-
-      if (existingFavoriteStatus.length > 0) {
-        return res
-          .status(409)
-          .json({ error: "User already added favorite this Post" });
-      }
-
-      const rows = await insertOne("user_favorites", userId, postId);
-
-      if (rows.length === 0) {
-        return res
-          .status(400)
-          .json({ error: "Failed to add favorites this posts." });
-      }
-      return res.status(200).json({
-        message: "Post added to favorites successfully",
-        postId: postId,
-        userId: userId,
-      });
+    if (rows.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Failed to add favorites this posts." });
+    }
+    return res.status(200).json({
+      message: "Post added to favorites successfully",
+      postId: postId,
+      userId: userId,
     });
   } catch (error) {
     console.error("[AddFavorite Error]:", error);
@@ -250,39 +223,27 @@ export async function removeFavorite(
   res: Response
 ) {
   try {
-    const cookies = req.cookies;
-    if (!cookies?.jwt) {
-      return res.status(401).json({ error: "Unauthorized" });
+    const userId = req.currentUser?.id;
+
+    if (!userId || !postId) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
-    const verifyToken = cookies.jwt;
 
-    jwt.verify(verifyToken, REFRESH, async (err: any, decoded: any) => {
-      if (err) {
-        return res.status(403).json({ error: "Forbidden" });
-      }
+    const result = await deleteOne(
+      "user_favorites",
+      ["user_id", "post_id"],
+      userId,
+      postId
+    );
 
-      const userId = BigInt(decoded.id);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Favorite status not found" });
+    }
 
-      if (!userId || !postId) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
-
-      const result = await deleteOne(
-        "user_favorites",
-        ["user_id", "post_id"],
-        userId,
-        postId
-      );
-
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ error: "Favorite status not found" });
-      }
-
-      return res.status(200).json({
-        message: "Removing post from favorites",
-        postId: postId,
-        userId: userId,
-      });
+    return res.status(200).json({
+      message: "Removing post from favorites",
+      postId: postId,
+      userId: userId,
     });
   } catch (error) {
     console.error("[RemoveFavorite Error]:", error);
@@ -292,3 +253,158 @@ export async function removeFavorite(
   }
 }
 
+export async function followPublisher(
+  publisherId: bigint,
+  req: Request,
+  res: Response
+) {
+  try {
+    const userId = req.currentUser?.id;
+
+    if (!userId || !publisherId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const existingFollowStatus = await queryOne(
+      "user_following_publishers",
+      ["user_id", "publisher_id"],
+      userId,
+      publisherId
+    );
+
+    if (existingFollowStatus.length > 0) {
+      return res
+        .status(409)
+        .json({ error: "User already following this publisher" });
+    }
+
+    const rows = await insertOne(
+      "user_following_publishers",
+      userId,
+      publisherId
+    );
+
+    if (rows.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Failed to follow this publisher." });
+    }
+
+    return res.status(200).json({
+      message: "Publisher followed successfully",
+      publisherId: publisherId,
+      userId: userId,
+    });
+  } catch (error) {
+    console.error("[FollowPublisher Error]:", error);
+    return res
+      .status(500)
+      .json({ error: "Internal server error", detail: error });
+  }
+}
+
+export async function unfollowPublisher(
+  publisherId: bigint,
+  req: Request,
+  res: Response
+) {
+  try {
+    const userId = req.currentUser?.id;
+
+    if (!userId || !publisherId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const result = await deleteOne(
+      "user_following_publishers",
+      ["user_id", "publisher_id"],
+      userId,
+      publisherId
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Follow status not found" });
+    }
+
+    return res.status(200).json({
+      message: "Unfollowed publisher successfully",
+      publisherId: publisherId,
+      userId: userId,
+    });
+  } catch (error) {
+    console.error("[UnfollowPublisher Error]:", error);
+    return res
+      .status(500)
+      .json({ error: "Internal server error", detail: error });
+  }
+}
+
+export async function followTag(tag: string, req: Request, res: Response) {
+  try {
+    const userId = req.currentUser?.id;
+
+    if (!userId || !tag) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const existingFollowStatus = await queryOne(
+      "user_following_tags",
+      ["user_id", "tag"],
+      userId,
+      tag
+    );
+
+    if (existingFollowStatus.length > 0) {
+      return res.status(409).json({ error: "User already following this tag" });
+    }
+
+    const rows = await insertOne("user_following_tags", userId, tag);
+
+    if (rows.length === 0) {
+      return res.status(400).json({ error: "Failed to follow this tag." });
+    }
+
+    return res.status(200).json({
+      message: "Tag followed successfully",
+      tag: tag,
+      userId: userId,
+    });
+  } catch (error) {
+    console.error("[FollowTag Error]:", error);
+    return res
+      .status(500)
+      .json({ error: "Internal server error", detail: error });
+  }
+}
+
+export async function unfollowTag(tag: string, req: Request, res: Response) {
+  try {
+    const userId = req.currentUser?.id;
+
+    if (!userId || !tag) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const result = await deleteOne(
+      "user_following_tags",
+      ["user_id", "tag"],
+      userId,
+      tag
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Follow status not found" });
+    }
+
+    return res.status(200).json({
+      message: "Unfollowed tag successfully",
+      tag: tag,
+      userId: userId,
+    });
+  } catch (error) {
+    console.error("[UnfollowTag Error]:", error);
+    return res
+      .status(500)
+      .json({ error: "Internal server error", detail: error });
+  }
+}

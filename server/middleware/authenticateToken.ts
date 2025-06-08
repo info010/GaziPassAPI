@@ -1,24 +1,34 @@
-import { PublisherSchema } from '@/utils/schemaManager';
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { CurrentUserSchema, PublisherSchema } from "@/utils/schemaManager";
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
-export async function authenticateToken(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return res.sendStatus(401);
-    const token = authHeader.split(' ')[1];
-    if (!token) return res.sendStatus(401);
+export async function authenticateToken(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const cookies = req.cookies;
+  if (!cookies?.jwt) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!, (err: any, data: any) => {
-        if (err) return res.sendStatus(403);
-        const user = {
-            id: BigInt(data.id),
-            username: data.username,
-            email: data.email,
-            role: data.role,
-        };
-        const publisher = PublisherSchema.parse(user);
-        console.log("Authenticated user:", publisher);
-        req.publisher = publisher;
-        next();
-    });
+  const token = req.cookies.jwt;
+
+  jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!, async (err: any, data: any) => {
+    if (err || data.ip !== req.ip) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    const user = {
+      id: BigInt(data.id),
+      username: data.username,
+      email: data.email,
+      role: data.role,
+      ip: data.ip
+    };
+    
+    const currentUser = CurrentUserSchema.parse(user);
+    req.currentUser = currentUser;
+    next();
+  });
 }

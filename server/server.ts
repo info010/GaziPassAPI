@@ -10,9 +10,9 @@ import "reflect-metadata";
 import { defineRoutes } from "@/server/modules/routes";
 import { checkConnection, createTables } from "@/utils/db";
 import { declareHandler } from "./middleware/declareHandler";
-import {
-  AuthController
-} from "@/server/controllers/exports";
+import AuthController from "@/server/controllers/auth/controller";
+import UsersController from "@/server/controllers/users/controller";
+import PostsController from "@/server/controllers/posts/controller";
 import { jsonHandler } from "./middleware/jsonHandler";
 // import { functionHandler } from "./middleware/functionHandler";
 import cookieParser from "cookie-parser";
@@ -41,6 +41,8 @@ export const Main = async () => {
   defineRoutes(
     [
       AuthController,
+      UsersController,
+      PostsController,
     ],
     application
   );

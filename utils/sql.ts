@@ -34,7 +34,7 @@ export async function deleteOne(table: string, filters: string[], ...values: any
   return result;    
 }
 
-export async function updateOne(table: string, fields: string[], filters: Record<string, any>[], ...values: any[]) {
+export async function updateOne(table: string, fields: string[], filters: Record<string, any>[], ...values: any[]): Promise<ResultSetHeader> {
   const setClause = "SET " + fields.map((value) => `${value} = ?`).join(", ");
   const whereClause = "WHERE " + filters.map((value) => `${Object.keys(value)[0]} = ?`).join(" AND ");
   const whereValues = filters.map((value) => Object.values(value)[0]);

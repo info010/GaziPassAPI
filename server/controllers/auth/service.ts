@@ -39,6 +39,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     username: rows[0].username,
     email: rows[0].email,
     role: rows[0].role,
+    ip: req.ip
   };
 
   const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
@@ -79,7 +80,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     return res.status(400).json({ error: "Failed to create AuthUser." });
   }
 
-  const rows = await insertOneWithColumns(
+  const insertResult = await insertOneWithColumns(
     "users",
     ["id", "username", "email"],
     id,
@@ -87,15 +88,23 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     email
   );
 
-  if (rows.length === 0) {
+  if (insertResult.length === 0) {
     return res.status(400).json({ error: "Failed to create User." });
   }
 
+  // Fetch the newly created user to get all fields including 'role'
+  const userRows = await queryOne("users", ["id"], id);
+
+  if (userRows.length === 0) {
+    return res.status(400).json({ error: "Failed to fetch created User." });
+  }
+
   const user = {
-    id: rows[0].id,
-    username: rows[0].username,
-    email: rows[0].email,
-    role: rows[0].role,
+    id: userRows[0].id,
+    username: userRows[0].username,
+    email: userRows[0].email,
+    role: userRows[0].role,
+    ip: req.ip
   };
 
   const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
@@ -116,7 +125,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
   const refreshToken = cookies.jwt;
 
   jwt.verify(refreshToken, REFRESH, async (err: any, decoded: any) => {
-    if (err) {
+    if (err || decoded.ip !== req.ip) {
       return res.sendStatus(403);
     }
 
@@ -127,6 +136,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       username: rows[0].username,
       email: rows[0].email,
       role: rows[0].role,
+      ip: req.ip
     };
 
     const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
@@ -142,7 +152,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
   const refreshToken = cookies.jwt;
 
   jwt.verify(refreshToken, REFRESH, async (err: any, decoded: any) => {
-    if (err) {
+    if (err || decoded.ip !== req.ip) {
       return res.sendStatus(403);
     }
     const rows = await queryOneWithColumns(
@@ -152,6 +162,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
       decoded.username,
       decoded.email
     );
+    
     if (rows.length === 0) {
       return res.sendStatus(403);
     }
