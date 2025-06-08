@@ -15,9 +15,9 @@ export const sendEmail = async (email: string, subject: string, message: string)
   
     const mailOptions = {
       from: `${app_name} <${email_user}>`,
-      email,
-      subject,
-      message,
+      to: email,
+      subject: subject,
+      html: message,
     };
   
     try {

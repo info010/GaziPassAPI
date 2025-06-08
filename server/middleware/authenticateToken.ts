@@ -16,7 +16,7 @@ export async function authenticateToken(
 
   jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!, async (err: any, data: any) => {
     if (err || data.ip !== req.ip) {
-      return res.status(403).json({ error: "Forbidden" });
+      return res.status(403).json({ error: "Forbidden" }); 
     }
 
     const user = {

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Controller } from '@/server/decorators/controller';
 import { Route } from '@/server/decorators/route';
-import { login, refresh, register ,logout } from './service';
+import { login, refresh, register ,logout, verify } from './service';
 
 @Controller('/auth')
 class AuthController {
@@ -19,6 +19,17 @@ class AuthController {
     @Route("post", "/register")
     async register(req: Request, res: Response, next: NextFunction) {
         return register(req, res, next);
+    }
+
+    @Route("get", "/verify/:id/:uniqeJwt")
+    async verify(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = BigInt(req.params.id);
+            const uniqeJwt = req.params.uniqeJwt;
+            return verify(userId, uniqeJwt, req, res, next);
+        } catch (error) {
+            return res.status(400).json({ error: "Someting went wrong" });
+        }
     }
 
     @Route("post", "/logout")

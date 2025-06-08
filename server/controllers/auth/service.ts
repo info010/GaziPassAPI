@@ -1,14 +1,23 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { queryOneWithColumns, queryOne, insertOneWithColumns, insertOne } from "@/utils/sql";
+import {
+  queryOneWithColumns,
+  queryOne,
+  insertOneWithColumns,
+  insertOne,
+} from "@/utils/sql";
 import { comparePassword } from "@/utils/crypt";
 import { hashPassword } from "@/utils/crypt";
 import { Quark } from "@thehadron/quark";
+import { sendEmail } from "@/utils/sendEmail";
+import { VerifyPayload, VerifyPayloadSchema } from "@/utils/schemaManager";
 
 const quark = new Quark(1);
 
 const ACCESS = process.env.ACCESS_TOKEN_SECRET!;
 const REFRESH = process.env.REFRESH_TOKEN_SECRET!;
+
+const VERIFY = process.env.VERIFY_TOKEN_SECRET!;
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   const { email, password } = req.body;
@@ -39,7 +48,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     username: rows[0].username,
     email: rows[0].email,
     role: rows[0].role,
-    ip: req.ip
+    ip: req.ip,
   };
 
   const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
@@ -51,70 +60,125 @@ export async function login(req: Request, res: Response, next: NextFunction) {
   });
   res.status(200).json({ accesToken: accesToken, refreshToken: refreshToken });
 }
- 
-export async function register(req: Request, res: Response, next: NextFunction) {
-  const { username, email, password } = req.body;
 
-  if (!username || !email || !password) {
-    return res.status(400).json({ error: "Missing required fields." });
+export async function register(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
+    const existingUsers = await queryOne("auth_users", ["email"], email);
+
+    if (existingUsers.length > 0) {
+      return res.status(409).json({ error: "Email already exists." });
+    }
+
+    const id = quark.generate();
+    const hashedPassword = hashPassword(password);
+
+    const veriyPayload = VerifyPayloadSchema.parse({
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    const uniqeJwt = jwt.sign(veriyPayload, VERIFY, { expiresIn: "6h" });
+
+    const message = `<p>Verify your email adress to complete the signup into your account.
+      </p><p>This link expires in 6 hours</b>.<p></p>Press <a href=
+      ${
+        process.env.BASE_URL + "/auth/verify/" + id + "/" + uniqeJwt
+      }>here</a> to proceed.</p>`;
+
+    await sendEmail(email, "Verify your email", message);
+
+    res
+      .status(200)
+      .json({ status: "PENDING", message: "Verification email sent." });
+  } catch (error) {
+    console.error("[Register Error]:", error);
+    return res.status(500).json({ error: "Failed to registration" });
   }
+}
 
-  const existingUsers = await queryOne("auth_users", ["email"], email);
+export async function verify(
+  userId: bigint,
+  uniqeJwt: string,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  jwt.verify(uniqeJwt, VERIFY, async (err: any, data: any) => {
+    if (err) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
 
-  if (existingUsers.length > 0) {
-    return res.status(409).json({ error: "Email already exists." });
-  }
+    if (!data.email || !data.username || !data.password) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
 
-  const id = quark.generate();
-  const hashedPassword = hashPassword(password);
+    const existingUsers = await queryOne("auth_users", ["email"], data.email);
 
-  const result = await insertOne(
-    "auth_users",
-    id,
-    username,
-    email,
-    hashedPassword
-  );
+    if (existingUsers.length > 0) {
+      return res.status(409).json({ error: "Email already exists." });
+    }
 
-  if (result.length === 0) {
-    return res.status(400).json({ error: "Failed to create AuthUser." });
-  }
+    const result = await insertOne(
+      "auth_users",
+      userId,
+      data.username,
+      data.email,
+      data.password
+    );
 
-  const insertResult = await insertOneWithColumns(
-    "users",
-    ["id", "username", "email"],
-    id,
-    username,
-    email
-  );
+    if (result.length === 0) {
+      return res.status(400).json({ error: "Failed to create AuthUser." });
+    }
 
-  if (insertResult.length === 0) {
-    return res.status(400).json({ error: "Failed to create User." });
-  }
+    const insertResult = await insertOneWithColumns(
+      "users",
+      ["id", "username", "email"],
+      userId,
+      data.username,
+      data.email
+    );
 
-  // Fetch the newly created user to get all fields including 'role'
-  const userRows = await queryOne("users", ["id"], id);
+    if (insertResult.length === 0) {
+      return res.status(400).json({ error: "Failed to create User." });
+    }
 
-  if (userRows.length === 0) {
-    return res.status(400).json({ error: "Failed to fetch created User." });
-  }
+    const userRows = await queryOne("users", ["id"], userId);
 
-  const user = {
-    id: userRows[0].id,
-    username: userRows[0].username,
-    email: userRows[0].email,
-    role: userRows[0].role,
-    ip: req.ip
-  };
+    if (userRows.length === 0) {
+      return res.status(400).json({ error: "Failed to fetch created User." });
+    }
 
-  const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
-  const refreshToken = jwt.sign(user, REFRESH, { expiresIn: "1d" });
+    const user = {
+      id: userRows[0].id,
+      username: userRows[0].username,
+      email: userRows[0].email,
+      role: userRows[0].role,
+      ip: req.ip,
+    };
 
-  res.cookie("jwt", refreshToken, {
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
+    const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
+    const refreshToken = jwt.sign(user, REFRESH, { expiresIn: "1d" });
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res
+      .status(200)
+      .json({ accesToken: accesToken, refreshToken: refreshToken });
   });
-  res.status(200).json({ accesToken: accesToken, refreshToken: refreshToken });
 }
 
 export async function refresh(req: Request, res: Response, next: NextFunction) {
@@ -136,7 +200,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       username: rows[0].username,
       email: rows[0].email,
       role: rows[0].role,
-      ip: req.ip
+      ip: req.ip,
     };
 
     const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
@@ -162,7 +226,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
       decoded.username,
       decoded.email
     );
-    
+
     if (rows.length === 0) {
       return res.sendStatus(403);
     }

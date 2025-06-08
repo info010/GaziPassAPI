@@ -40,6 +40,8 @@ export const CurrentUserSchema = PublisherSchema.extend({
     ip: lepton.string().optional(),
 }).strict();
 
+export const VerifyPayloadSchema = AuthUserSchema.omit(["id"]).strict();
+
 export type SecretPayload = lepton.infer<typeof SecretPayloadSchema>;
 
 export type AuthUser = lepton.infer<typeof AuthUserSchema>;
@@ -51,3 +53,5 @@ export type Post = lepton.infer<typeof PostSchema>;
 export type User = lepton.infer<typeof UserSchema>;
 
 export type CurrentUser = lepton.infer<typeof CurrentUserSchema>;
+
+export type VerifyPayload = lepton.infer<typeof VerifyPayloadSchema>;
