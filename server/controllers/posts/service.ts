@@ -8,6 +8,7 @@ import {
   queryOne,
   updateOne,
 } from "@/utils/sql";
+import { RowDataPacket } from "mysql2";
 
 const quark = new Quark(2);
 
@@ -34,7 +35,9 @@ export async function getPostById(postId: bigint, req: Request, res: Response) {
 
     const rows_tags = await queryOne("post_tags", ["post_id"], postId);
 
-    const tags = rows_tags.map((row) => row.tag);
+    const tags = rows_tags.map((row: RowDataPacket) => {
+      return row.tag;
+    });
 
     const post: Post = {
       id: BigInt(postId),
@@ -79,9 +82,7 @@ export async function createPost(req: Request, res: Response) {
       return res.status(400).json({ error: "Failed to create Post." });
     }
 
-    await Promise.all(
-      tags.map((tag: string) => insertOne("post_tags", id, tag))
-    );
+    tags.map(async (tag: string) => await insertOne("post_tags", id, tag));
 
     await getPostById(id, req, res);
   } catch (error) {
@@ -120,9 +121,7 @@ export async function updatePost(postId: bigint, req: Request, res: Response) {
 
     await deleteOne("post_tags", ["post_id"], postId);
 
-    await Promise.all(
-      tags.map((tag: string) => insertOne("post_tags", postId, tag))
-    );
+    tags.map(async (tag: string) => await insertOne("post_tags", postId, tag));
 
     await getPostById(postId, req, res);
   } catch (error) {
@@ -191,8 +190,7 @@ export async function votePost(
       return res.status(400).json({ error: "Failed to vote Post" });
     }
 
-    if (index > 0) 
-      await insertOne("upvote", userId, postId);
+    if (index > 0) await insertOne("upvote", userId, postId);
     if (index < 0)
       await deleteOne("upvote", ["user_id", "post_id"], userId, postId);
 

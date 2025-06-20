@@ -1,8 +1,10 @@
 import bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
+import { CurrentUser } from "./schemaManager";
 
 const SECRET = process.env.RECOVERY_SECRET!;
+const ACCESS = process.env.ACCESS_TOKEN_SECRET!;
 
 export const signJwt = (payload: object) =>
   jwt.sign(payload, SECRET, { expiresIn: "1h" });
@@ -16,6 +18,10 @@ export const comparePassword = (pwd: string, hash: string) =>  bcrypt.compareSyn
 export const generateSecretToken = () => {
     return randomBytes(64).toString('hex')
 };
+
+export function generateAccessToken(user: any) {
+  return jwt.sign(user, ACCESS, { expiresIn: "15s" });
+}
 
 export const turnstileVertify = async (token: string) => {
 

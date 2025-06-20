@@ -60,12 +60,13 @@ export async function getUserById(id: bigint, req: Request, res: Response) {
 
     const posts: Post[] = await Promise.all(
       rows_posts.map(async (row: RowDataPacket) => {
+
         const rows_tags = await queryOne("post_tags", ["post_id"], row.id);
 
         const tags: string[] = rows_tags.map((e: RowDataPacket) => e.tag);
 
         const post: Post = {
-          id: BigInt(id),
+          id: BigInt(row.id),
           title: row.title as string,
           description: row.description as string,
           upvote: row.upvote as number,
@@ -78,7 +79,7 @@ export async function getUserById(id: bigint, req: Request, res: Response) {
             role: rows_user[0].role,
           } as Publisher,
         };
-
+        
         return post;
       })
     );
@@ -132,7 +133,7 @@ export async function getUserById(id: bigint, req: Request, res: Response) {
 export async function getCurrentUser(req: Request, res: Response) {
   const userId = req.currentUser?.id;
   if (!userId) {
-    return res.status(400).json({ error: "User ID is required" });
+    return res.status(400).json({ error: "User ID is requiredd" });
   }
   await getUserById(userId, req, res);
 }

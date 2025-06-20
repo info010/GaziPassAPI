@@ -21,18 +21,17 @@ class AuthController {
         return register(req, res, next);
     }
 
-    @Route("get", "/verify/:id/:uniqeJwt")
+    @Route("get", "/verify/:uniqueJwt")
     async verify(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = BigInt(req.params.id);
-            const uniqeJwt = req.params.uniqeJwt;
-            return verify(userId, uniqeJwt, req, res, next);
+            const uniqueJwt = req.params.uniqueJwt;
+            return verify(uniqueJwt, req, res, next);
         } catch (error) {
             return res.status(400).json({ error: "Someting went wrong" });
         }
     }
 
-    @Route("post", "/logout")
+    @Route("delete", "/logout")
     async logout(req: Request, res: Response, next: NextFunction) {
         return logout(req, res, next);
     }

@@ -6,23 +6,24 @@ import {
   insertOneWithColumns,
   insertOne,
 } from "@/utils/sql";
-import { comparePassword } from "@/utils/crypt";
+import { comparePassword, generateAccessToken } from "@/utils/crypt";
 import { hashPassword } from "@/utils/crypt";
 import { Quark } from "@thehadron/quark";
 import { sendEmail } from "@/utils/sendEmail";
-import { VerifyPayload, VerifyPayloadSchema } from "@/utils/schemaManager";
+import { VerifyPayloadSchema } from "@/utils/schemaManager";
 
 const quark = new Quark(1);
 
-const ACCESS = process.env.ACCESS_TOKEN_SECRET!;
 const REFRESH = process.env.REFRESH_TOKEN_SECRET!;
 
 const VERIFY = process.env.VERIFY_TOKEN_SECRET!;
 
+const refreshTokens: Array<string> = [];
+
 export async function login(req: Request, res: Response, next: NextFunction) {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
+    return res.status(400).json({ error: "Email and password are required" });
   }
 
   const row = await queryOneWithColumns(
@@ -32,13 +33,13 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     email
   );
   if (row.length === 0) {
-    return res.status(401).json({ message: "Invalid email" });
+    return res.status(401).json({ error: "Invalid email" });
   }
 
   const match = comparePassword(password, row[0].password);
 
   if (!match) {
-    return res.status(401).json({ message: "Invalid password" });
+    return res.status(401).json({ error: "Invalid password" });
   }
 
   const rows = await queryOne("users", ["email"], email);
@@ -51,14 +52,12 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     ip: req.ip,
   };
 
-  const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
+  const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, REFRESH, { expiresIn: "1d" });
 
-  res.cookie("jwt", refreshToken, {
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
-  });
-  res.status(200).json({ accesToken: accesToken, refreshToken: refreshToken });
+  refreshTokens.push(refreshToken);
+
+  res.status(200).json({ accessToken: accessToken , refreshToken: refreshToken});
 }
 
 export async function register(
@@ -79,7 +78,6 @@ export async function register(
       return res.status(409).json({ error: "Email already exists." });
     }
 
-    const id = quark.generate();
     const hashedPassword = hashPassword(password);
 
     const veriyPayload = VerifyPayloadSchema.parse({
@@ -88,12 +86,12 @@ export async function register(
       password: hashedPassword,
     });
 
-    const uniqeJwt = jwt.sign(veriyPayload, VERIFY, { expiresIn: "6h" });
+    const uniqueJwt = jwt.sign(veriyPayload, VERIFY, { expiresIn: "6h" });
 
     const message = `<p>Verify your email adress to complete the signup into your account.
       </p><p>This link expires in 6 hours</b>.<p></p>Press <a href=
       ${
-        process.env.BASE_URL + "/auth/verify/" + id + "/" + uniqeJwt
+        process.env.BASE_URL + "/auth/verify/" + uniqueJwt
       }>here</a> to proceed.</p>`;
 
     await sendEmail(email, "Verify your email", message);
@@ -108,13 +106,12 @@ export async function register(
 }
 
 export async function verify(
-  userId: bigint,
-  uniqeJwt: string,
+  uniqueJwt: string,
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  jwt.verify(uniqeJwt, VERIFY, async (err: any, data: any) => {
+  jwt.verify(uniqueJwt, VERIFY, async (err: any, data: any) => {
     if (err) {
       return res.status(403).json({ error: "Forbidden" });
     }
@@ -128,6 +125,8 @@ export async function verify(
     if (existingUsers.length > 0) {
       return res.status(409).json({ error: "Email already exists." });
     }
+
+    const userId = quark.generate();
 
     const result = await insertOne(
       "auth_users",
@@ -167,53 +166,40 @@ export async function verify(
       ip: req.ip,
     };
 
-    const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
+    const accessToken = generateAccessToken(user);
     const refreshToken = jwt.sign(user, REFRESH, { expiresIn: "1d" });
 
-    res.cookie("jwt", refreshToken, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    refreshTokens.push(refreshToken);
 
-    res
-      .status(200)
-      .json({ accesToken: accesToken, refreshToken: refreshToken });
+    res.status(200).json({ accessToken: accessToken , refreshToken: refreshToken});
   });
 }
 
 export async function refresh(req: Request, res: Response, next: NextFunction) {
-  const cookies = req.cookies;
-  if (!cookies?.jwt) {
-    return res.sendStatus(401);
-  }
-  const refreshToken = cookies.jwt;
+  const { refreshToken } = req.body;
+
+  if(!refreshTokens.includes(refreshToken)) return res.status(404).json({ error : "RefreshToken is not valid." })
 
   jwt.verify(refreshToken, REFRESH, async (err: any, decoded: any) => {
     if (err || decoded.ip !== req.ip) {
       return res.sendStatus(403);
     }
 
-    const rows = await queryOne("users", ["id"], decoded.id);
-
     const user = {
-      id: rows[0].id,
-      username: rows[0].username,
-      email: rows[0].email,
-      role: rows[0].role,
+      id: decoded.id,
+      username: decoded.username,
+      email: decoded.email,
+      role: decoded.role,
       ip: req.ip,
     };
 
-    const accesToken = jwt.sign(user, ACCESS, { expiresIn: "30s" });
-    res.status(200).json({ accesToken: accesToken });
+    const accessToken = generateAccessToken(user);
+    res.status(200).json({ accessToken: accessToken });
   });
 }
 
 export async function logout(req: Request, res: Response, next: NextFunction) {
-  const cookies = req.cookies;
-  if (!cookies?.jwt) {
-    return res.sendStatus(401);
-  }
-  const refreshToken = cookies.jwt;
+  const { refreshToken } = req.body;
 
   jwt.verify(refreshToken, REFRESH, async (err: any, decoded: any) => {
     if (err || decoded.ip !== req.ip) {
@@ -231,7 +217,9 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
       return res.sendStatus(403);
     }
 
-    res.clearCookie("jwt", { httpOnly: true });
+    const index = refreshTokens.indexOf(refreshToken);
+    refreshTokens.splice(index, 1);
+
     res.status(200).json({ message: "Logout successful" });
   });
 }

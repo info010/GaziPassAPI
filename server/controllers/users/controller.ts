@@ -61,7 +61,7 @@ class UsersController {
     }
   }
 
-  @Route("get", "/me/posts")
+  @Route("get", "/me/posts", authenticateToken)
   async getProfilePosts(req: Request, res: Response) {
     try {
       await getCurrentUser(req, res);
